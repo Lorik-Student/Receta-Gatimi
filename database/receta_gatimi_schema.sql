@@ -8,7 +8,7 @@ CREATE TABLE RecipeCategories (
     imazhi VARCHAR(255)
 );
 
-CREATE TABLE Ingredienfavoritests (
+CREATE TABLE Ingredients (
     id INT AUTO_INCREMENT PRIMARY KEY,
     emertimi VARCHAR(100) NOT NULL,
     njesia_matese VARCHAR(20)
