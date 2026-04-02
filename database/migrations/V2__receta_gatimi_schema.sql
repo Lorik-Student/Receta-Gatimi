@@ -1,6 +1,3 @@
-CREATE DATABASE receta_gatimi;
-USE receta_gatimi;
-
 CREATE TABLE RecipeCategories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     emertimi VARCHAR(100) NOT NULL,
