@@ -1,11 +1,11 @@
-import signupRoute from "./signup.js";
-import userProfileRoute from "./user-profiles.js";
+import authRoutes from "./auth.routes.js";
+import userRoutes from "./users.routes.js";
 import { Router } from "express";
 
 const router = Router();
 
-router.use("/signup", signupRoute);
-router.use("/user-profiles", userProfileRoute);
+router.use("/auth", authRoutes);
+router.use("/user", userRoutes);
 // router.use("/recipes", recipeRoute);
 
 

@@ -1,10 +1,11 @@
 import { Router, type Request, type Response } from "express";
-import * as UserModel from "../models/User.js";
+import * as Model from "../models/user.model.js";
 const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
-    const users = await UserModel.findAll();
-    return res.json(users);
+    const users = await Model.findAllUserProfiles();
+    res.json(users);
+   
 });
 
 export default router;
