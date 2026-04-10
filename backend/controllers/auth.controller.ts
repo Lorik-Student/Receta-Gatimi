@@ -12,4 +12,4 @@ async function login(req: Request, res: Response) {
     await Services.authenticate(req.body);
 }
 
-export { signUp };
+export { signUp, login };

@@ -16,7 +16,7 @@ async function createUser(userData: Types.SignUpData): Promise<Types.Id> {
 
     const userToInsert: Model.UserInsert = {
         ...userInfo,
-        roles
+        roles,
         password_hash: passwordHash,
         email_confirmed: false,
         lockout_enabled: false,

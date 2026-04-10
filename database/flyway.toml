@@ -4,4 +4,5 @@ locations = ["filesystem:migrations"]
 [environments.default]
 url = "jdbc:mysql://127.0.0.1:3306/receta_gatimi"
 user = "root"
-password = "password123"
+password = ""
+cleanDisabled = false
