@@ -1,15 +1,18 @@
 import * as Services from "../services/auth.service.js";
-import * as Models from "../models/user.model.js";
 import { type Request, type Response } from "express";
 
-async function signUp(req: Request, res: Response) { 
+async function signup(req: Request, res: Response) { 
     const userId = await Services.createUser(req.body);
-    res.status(201).json({ success: true, id: userId, message: "User created successfully" });
+    return res.status(201).json({ success: true, id: userId, message: "User created successfully" });
     
 }
 
 async function login(req: Request, res: Response) { 
-    await Services.authenticate(req.body);
+    const userId = await Services.authenticate(req.body);
+    if (!userId) {
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+    return res.status(200).json({ success: true, id: userId, message: "Login successful" });
 }
 
-export { signUp, login };
+export { signup, login };

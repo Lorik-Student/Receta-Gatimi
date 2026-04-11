@@ -1,4 +1,4 @@
-interface SignUpData {                  
+export interface SignUpData {                  
     emri: string;                 
     mbiemri: string;                 
     email: string;
@@ -6,15 +6,15 @@ interface SignUpData {
     phone_number?: string | null;   
 }
 
-interface LoginData { 
+export interface LoginData { 
     email: string;
     password: string;
 }
 
 
-type Id = number & { __brand: "Id"};
+export type Id = number & { __brand: "Id"};
 
-interface UserProfile { 
+export interface UserProfile { 
     id: Id;                 
     emri: string;                 
     mbiemri: string;                 
@@ -22,10 +22,6 @@ interface UserProfile {
     phone_number?: string | null;   
 }
 
-type Role = 'admin' | 'user' | 'editor';
-
-
-export type { SignUpData, UserProfile, Id, LoginData, Role };
 
 export interface Category {
     id: Id;

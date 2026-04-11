@@ -1,2 +1,5 @@
 .env
 scripts
+.vscode
+.postman
+postman

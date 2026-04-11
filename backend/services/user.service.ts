@@ -1,7 +1,10 @@
-async function getAllUserProfiles(): Promise<Models.UserProfile[]> {
-    return await Models.findAllUserProfiles();
+import * as Model from "../models/user.model.js";
+import * as Types from "../types.js";
+
+export async function getAllUserProfiles(): Promise<Types.UserProfile[]> {
+    return await Model.findAllUserProfiles();
 }
 
-async function getUserProfileById(id: Models.Id): Promise<Models.User | null> { 
-    return await Models.findUserById(id);
+export async function getUserProfile(id: Types.Id): Promise<Types.UserProfile | null> { 
+    return await Model.findUserProfile(id);
 }

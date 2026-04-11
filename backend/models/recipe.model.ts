@@ -2,7 +2,6 @@ import db from "../config/db.js";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import type { Id } from "../types.js";
 
-// CRUD for Recipes + Ingredients + Steps + Tags (All-in-one transaction)
 export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: number[]) {
     const conn = await db.getConnection();
     try {
@@ -36,7 +35,6 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
     }
 }
 
-// DASHBOARD REQUIREMENT: Popular Recipes
 export async function getPopularRecipes() {
     const [rows] = await db.query(`
         SELECT r.id, r.titulli, COUNT(f.id) as fav_count 

@@ -1,12 +1,12 @@
 CREATE TABLE Roles (
-    id SERIAL PRIMARY KEY,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     emertimi VARCHAR(100) NOT NULL,
     pershkrimi TEXT,
     normalized_name VARCHAR(100) UNIQUE NOT NULL
 );
 
 CREATE TABLE Users (
-    id SERIAL PRIMARY KEY,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     emri VARCHAR(50) NOT NULL,
     mbiemri VARCHAR(50) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -16,36 +16,41 @@ CREATE TABLE Users (
     lockout_enabled BOOLEAN DEFAULT TRUE,
     access_failed_count INT DEFAULT 0,
     data_krijimit TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    statusi VARCHAR(20) DEFAULT 'Active'
+    statusi VARCHAR(20) DEFAULT 'active'
 );
 
 CREATE TABLE UserRoles (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES Users(id) ON DELETE CASCADE,
-    role_id INT REFERENCES Roles(id) ON DELETE CASCADE,
-    UNIQUE(user_id, role_id)
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    role_id INT UNSIGNED NOT NULL,
+    UNIQUE(user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
 );
 
 CREATE TABLE UserClaims (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES Users(id) ON DELETE CASCADE,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
     claim_type VARCHAR(255),
-    claim_value TEXT
+    claim_value TEXT,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE UserTokens (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES Users(id) ON DELETE CASCADE,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
     login_provider VARCHAR(100),
     token_name VARCHAR(100),
-    token_value TEXT
+    token_value TEXT,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE RefreshTokens (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES Users(id) ON DELETE CASCADE,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
     token VARCHAR(500) UNIQUE NOT NULL,
     expires TIMESTAMP NOT NULL,
     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    revoked TIMESTAMP
+    revoked TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );

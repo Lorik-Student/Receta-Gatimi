@@ -10,7 +10,7 @@ const router = Router();
 
 // Identity dhe Users
 router.use("/auth", authRoutes);
-router.use("/user", userRoutes);
+router.use("/users", userRoutes);
 
 // Recipe 
 router.use("/recipes", recipeRoutes);

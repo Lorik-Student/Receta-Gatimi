@@ -1,5 +1,5 @@
 import { Router } from "express";
-import * as ShoppingService from "../services/shopping.service";
+import * as ShoppingService from "../services/shopping.service.js";
 
 const router = Router();    
 
