@@ -1,15 +1,9 @@
-export interface SignUpData {                  
-    emri: string;                 
-    mbiemri: string;                 
-    email: string;
-    password: string;             
-    phone_number?: string | null;   
-}
+import type { infer as ZodInfer } from "zod";
+import { loginBodySchema, signUpBodySchema } from "./schemas/auth.schema.js";
 
-export interface LoginData { 
-    email: string;
-    password: string;
-}
+export type SignUpData = ZodInfer<typeof signUpBodySchema>;
+
+export type LoginData = ZodInfer<typeof loginBodySchema>;
 
 
 export type Id = number & { __brand: "Id"};
