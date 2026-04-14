@@ -1,5 +1,6 @@
 import type { infer as ZodInfer } from "zod";
-import { loginBodySchema, signUpBodySchema } from "./schemas/auth.schema.js";
+import { loginBodySchema, signUpBodySchema } from "../../modules/auth/auth.schema.js";
+import type { UserRole } from "../../modules/user/user.model.js";
 
 export type SignUpData = ZodInfer<typeof signUpBodySchema>;
 
@@ -12,7 +13,8 @@ export interface UserProfile {
     id: Id;                 
     emri: string;                 
     mbiemri: string;                 
-    email: string;                 
+    email: string;
+    roles: UserRole[];             
     phone_number?: string | null;   
 }
 
