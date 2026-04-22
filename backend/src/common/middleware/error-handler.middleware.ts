@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
-import { HttpError } from "../errors/http-error.js";
+import { HttpError } from "../http-errors.js";
 
 type ErrorPayload = {
     success: false;
@@ -8,10 +8,6 @@ type ErrorPayload = {
         message: string;
         details?: unknown;
     };
-};
-
-export const notFoundHandler: RequestHandler = (_req, _res, next) => {
-    next(new HttpError(404, "Route not found", { code: "ROUTE_NOT_FOUND" }));
 };
 
 export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
@@ -34,20 +30,11 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
 
     console.error("Unhandled error:", error);
 
-    const isDev = process.env.NODE_ENV !== "production";
-    const diagnostics = isDev
-        ? {
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined
-        }
-        : undefined;
-
     return res.status(500).json({
         success: false,
         error: {
             code: "INTERNAL_SERVER_ERROR",
             message: "Unexpected server error",
-            details: diagnostics
         }
     } satisfies ErrorPayload);
 };

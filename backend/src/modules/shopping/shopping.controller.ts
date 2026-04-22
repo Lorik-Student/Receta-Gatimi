@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import * as ShoppingService from "./shopping.service.js";
-import { HttpError } from "../../common/errors/http-error.js";
+import { HttpError } from "../../common/http-errors.js";
 
 export async function createShoppingList(req: Request, res: Response) {
   try {

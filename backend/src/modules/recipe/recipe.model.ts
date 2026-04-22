@@ -35,12 +35,12 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
     }
 }
 
-export async function getPopularRecipes() {
+export async function getPopularRecipes(limit: number = 5) {
     const [rows] = await db.query(`
         SELECT r.id, r.titulli, COUNT(f.id) as fav_count 
         FROM Recipes r 
         LEFT JOIN Favorites f ON r.id = f.recipe_id 
-        GROUP BY r.id ORDER BY fav_count DESC LIMIT 5
-    `);
+        GROUP BY r.id ORDER BY fav_count DESC LIMIT ?`, [limit]);
+
     return rows;
 }

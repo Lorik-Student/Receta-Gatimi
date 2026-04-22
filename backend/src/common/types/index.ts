@@ -1,6 +1,5 @@
 import type { infer as ZodInfer } from "zod";
 import { loginBodySchema, signUpBodySchema } from "../../modules/auth/auth.schema.js";
-import type { UserRole } from "../../modules/user/user.model.js";
 
 export type SignUpData = ZodInfer<typeof signUpBodySchema>;
 
@@ -9,60 +8,7 @@ export type LoginData = ZodInfer<typeof loginBodySchema>;
 
 export type Id = number & { __brand: "Id"};
 
-export interface UserProfile { 
-    id: Id;                 
-    emri: string;                 
-    mbiemri: string;                 
-    email: string;
-    roles: UserRole[];             
-    phone_number?: string | null;   
-}
-
-
-export interface Category {
-    id: Id;
-    emertimi: string;
-    pershkrimi?: string;
-    imazhi?: string;
-}
-
-export interface Recipe {
-    id: Id;
-    titulli: string;
-    pershkrimi: string;
-    koha_pergatitjes: number;
-    koha_gatimit: number;
-    porcione: number;
-    veshtiresija: 'Easy' | 'Medium' | 'Hard';
-    imazhi?: string;
-    user_id: Id;
-    category_id: Id;
-}
-
-export interface RecipeIngredient {
-    ingredient_id: Id;
-    sasia: number;
-    njesia: string;
-}
-
-export interface RecipeStep {
-    hapi_nr: number;
-    pershkrimi: string;
-    imazhi?: string;
-}
-
-export interface Review {
-    id: Id;
-    recipe_id: Id;
-    user_id: Id;
-    vleresimi: number;
-    komenti: string;
-    data: Date;
-}
-
-export interface ShoppingList {
-    id: Id;
-    user_id: Id;
-    emertimi: string;
-    data_krijimit: Date;
-}
+export * from "./user.types.js";
+export * from "./category.types.js";
+export * from "./recipe.types.js";
+export * from "./shopping.types.js";

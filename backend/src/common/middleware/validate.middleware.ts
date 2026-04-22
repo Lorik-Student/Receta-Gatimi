@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 import type { ZodIssue, ZodTypeAny } from "zod";
-import { HttpError } from "../errors/http-error.js";
+import { BadRequestError, HttpError } from "../http-errors.js";
 
 type RequestSchema = {
     body?: ZodTypeAny;
@@ -22,10 +22,10 @@ function formatIssues(part: ValidatedPart, issues: ZodIssue[]) {
 async function parsePart(part: ValidatedPart, schema: ZodTypeAny, value: unknown) {
     const result = await schema.safeParseAsync(value);
     if (!result.success) {
-        throw new HttpError(400, "Request validation failed", {
-            code: "VALIDATION_ERROR",
-            details: formatIssues(part, result.error.issues)
-        });
+        throw new BadRequestError("VALIDATION_ERROR", 
+                                "Request validation failed", 
+                                {details: formatIssues(part, result.error.issues)}
+        );
     }
 
     return result.data;

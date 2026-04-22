@@ -3,7 +3,7 @@ import { z } from "zod";
 const recipeStepSchema = z.object({
   hapi_nr: z.coerce.number().int().positive(),
   pershkrimi: z.string().trim().min(1),
-  imazhi: z.string().trim().url().max(1024).optional()
+  imazhi: z.url().trim().max(1024).optional()
 }).strict();
 
 const recipeIngredientSchema = z.object({
@@ -19,7 +19,7 @@ export const createRecipeBodySchema = z.object({
   koha_gatimit: z.coerce.number().int().nonnegative(),
   porcione: z.coerce.number().int().positive(),
   veshtiresija: z.enum(["Easy", "Medium", "Hard"]),
-  imazhi: z.string().trim().url().max(1024).optional(),
+  imazhi: z.url().trim().max(1024).optional(),
   user_id: z.coerce.number().int().positive(),
   category_id: z.coerce.number().int().positive(),
   steps: z.array(recipeStepSchema).min(1),

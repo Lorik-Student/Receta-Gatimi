@@ -1,6 +1,7 @@
 import db from "../../config/db.js";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
-import type { Id, Category } from "../../common/types/index.js";
+import type { Id } from "../../common/types/index.js";
+import type { Category } from "../../common/types/category.types.js";
 
 export async function findAllCategories(): Promise<Category[]> {
     const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeCategories");

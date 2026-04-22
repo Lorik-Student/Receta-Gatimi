@@ -13,7 +13,7 @@ CREATE TABLE Users (
     password_hash TEXT NOT NULL,
     phone_number VARCHAR(20),
     email_confirmed BOOLEAN DEFAULT FALSE,
-    lockout_enabled BOOLEAN DEFAULT TRUE,
+    lockout_enabled BOOLEAN DEFAULT FALSE,
     access_failed_count INT DEFAULT 0,
     data_krijimit TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     statusi VARCHAR(20) DEFAULT 'active'
