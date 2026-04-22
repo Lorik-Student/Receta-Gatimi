@@ -2,6 +2,7 @@ import db from "../../config/db.js";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import type { Id } from "../../common/types/index.js";
 
+//create recipe
 export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: number[]) {
     const conn = await db.getConnection();
     try {
@@ -35,12 +36,54 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
     }
 }
 
-export async function getPopularRecipes(limit: number = 5) {
+
+//read
+export async function getAllRecipes() {
+    const [rows] = await db.query("SELECT * FROM Recipes");
+    return rows as RowDataPacket[];
+}
+
+export async function getAllIngredients() {
+    const [rows] = await db.query("SELECT * FROM Ingredients");
+    return rows as RowDataPacket[];
+}
+
+export async function getAllTags() {
+    const [rows] = await db.query("SELECT * FROM Tags");
+    return rows as RowDataPacket[];
+}
+
+//delete
+export async function deleteRecipe(id: Id) {
+    await db.query("DELETE FROM Recipes WHERE id = ?", [id]);
+}
+
+
+//create ingredient
+export async function insertIngredient(emertimi: string, njesia: string) {
+    const [res] = await db.query<ResultSetHeader>(
+        "INSERT INTO Ingredients (emertimi, njesia_matese) VALUES (?, ?)",
+        [emertimi, njesia]
+    );
+    return res.insertId;
+}
+
+//create tag
+export async function insertTag(emertimi: string) {
+    const [res] = await db.query<ResultSetHeader>(
+        "INSERT INTO Tags (emertimi) VALUES (?)",
+        [emertimi]
+    );
+    return res.insertId;
+}
+
+
+export async function getPopularRecipes() {
     const [rows] = await db.query(`
         SELECT r.id, r.titulli, COUNT(f.id) as fav_count 
         FROM Recipes r 
         LEFT JOIN Favorites f ON r.id = f.recipe_id 
-        GROUP BY r.id ORDER BY fav_count DESC LIMIT ?`, [limit]);
+        GROUP BY r.id ORDER BY fav_count DESC LIMIT ?`, [5]);
 
     return rows;
 }

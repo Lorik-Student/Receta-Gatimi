@@ -3,11 +3,13 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2";
 import type { Id } from "../../common/types/index.js";
 import type { Category } from "../../common/types/category.types.js";
 
+//read categories
 export async function findAllCategories(): Promise<Category[]> {
     const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeCategories");
     return rows as Category[];
 }
 
+//create category
 export async function insertCategory(cat: Omit<Category, "id">): Promise<Id> {
     const [res] = await db.query<ResultSetHeader>(
         "INSERT INTO RecipeCategories (emertimi, pershkrimi, imazhi) VALUES (?, ?, ?)",
