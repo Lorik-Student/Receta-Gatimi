@@ -1,11 +1,19 @@
 import * as RecipeModel from "./recipe.model.js";
 import * as UserModel from "../user/user.model.js";
-import type { Id } from "../../common/types/index.js";
+import { NotFoundError } from "../../common/http-errors.js";
 
 export async function getDashboardData() {
     const popularRecipes = await RecipeModel.getPopularRecipes();
     const activeAuthors = await UserModel.getActiveAuthors();
     return { popularRecipes, activeAuthors };
+}
+
+export async function getRecipe(id: number) { 
+    const recipe = await RecipeModel.getRecipeById(id);
+    if (!recipe) {
+        throw new NotFoundError("RECIPE_NOT_FOUND", "Recipe not found");
+    }
+    return recipe;
 }
 
 export const createRecipe = (data: any) => {
@@ -15,7 +23,7 @@ export const createRecipe = (data: any) => {
 
 export const fetchAllRecipes = () => RecipeModel.getAllRecipes();
 
-export const removeRecipe = (id: Id) => RecipeModel.deleteRecipe(id);
+export const removeRecipe = (id: number) => RecipeModel.deleteRecipe(id);
 
 export const fetchIngredients = () => RecipeModel.getAllIngredients();
 

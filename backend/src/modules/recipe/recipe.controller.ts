@@ -1,51 +1,44 @@
 import type { Request, Response } from "express";
 import * as RecipeService from "./recipe.service.js";
-import type { Id } from "../../common/types/index.js";
+import { BadRequestError } from "../../common/http-errors.js";
 
 export async function getDashboard(req: Request, res: Response) {
-    try {
-        const data = await RecipeService.getDashboardData();
-        res.json(data);
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
+    const data = await RecipeService.getDashboardData();
+    res.json(data);
 }
 
 export async function createFullRecipe(req: Request, res: Response) {
-    try {
-        const id = await RecipeService.createRecipe(req.body);
-        res.status(201).json({ id, message: "Recipe created successfully" });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
-    }
+    const id = await RecipeService.createRecipe(req.body);
+    res.status(201).json({ id, message: "Recipe created successfully" });
 }
 
 export async function getRecipes(req: Request, res: Response) {
-    try {
-        const recipes = await RecipeService.fetchAllRecipes();
-        res.json(recipes);
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
+    const recipes = await RecipeService.fetchAllRecipes();
+    res.json(recipes);
+}
+
+export async function getRecipe(req: Request, res: Response) {
+    const id = Number(req.params.id as string);
+    if (Number.isNaN(id) || id <= 0) {
+        throw new BadRequestError("INVALID_RECIPE_ID", "Invalid recipe id");
     }
+    const recipe = await RecipeService.getRecipe(id);
+    res.json(recipe);
 }
 
 export async function deleteRecipe(req: Request, res: Response) {
-    try {
-        const { id } = req.params;
+    const { id } = req.params;
 
-        if (typeof id !== "string") {
-            return res.status(400).json({ error: "Invalid recipe id" });
-        }
-
-        const recipeId = Number.parseInt(id, 10);
-
-        if (!Number.isInteger(recipeId) || recipeId <= 0) {
-            return res.status(400).json({ error: "Invalid recipe id" });
-        }
-
-        await RecipeService.removeRecipe(recipeId as Id);
-        res.json({ message: "Recipe deleted" });
-    } catch (error: any) {
-        res.status(500).json({ error: error.message });
+    if (typeof id !== "string") {
+        throw new BadRequestError("INVALID_RECIPE_ID", "Invalid recipe id");
     }
+
+    const recipeId = Number.parseInt(id, 10);
+
+    if (!Number.isInteger(recipeId) || recipeId <= 0) {
+        throw new BadRequestError("INVALID_RECIPE_ID", "Invalid recipe id");
+    }
+
+    await RecipeService.removeRecipe(recipeId);
+    res.json({ message: "Recipe deleted" });
 }

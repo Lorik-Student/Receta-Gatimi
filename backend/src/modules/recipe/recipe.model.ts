@@ -1,7 +1,5 @@
 import db from "../../config/db.js";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
-import type { Id } from "../../common/types/index.js";
-
 //create recipe
 export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: number[]) {
     const conn = await db.getConnection();
@@ -27,7 +25,7 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
             await conn.query(`INSERT INTO RecipeTags (recipe_id, tag_id) VALUES ?`, [tagValues]);
         }
         await conn.commit();
-        return recipeId as Id;
+        return recipeId;
     } catch (err) {
         await conn.rollback();
         throw err;
@@ -39,9 +37,30 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
 
 //read
 export async function getAllRecipes() {
-    const [rows] = await db.query("SELECT * FROM Recipes");
+    const [rows] = await db.query("SELECT * FROM Recipes ORDER BY id DESC");
     return rows as RowDataPacket[];
 }
+
+export async function getRecipeById(id: number) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM Recipes WHERE id = ?", [id]);
+    return rows[0] || null;
+}
+
+export async function getRecipeSteps(recipeId: number) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeSteps WHERE recipe_id = ? ORDER BY hapi_nr ASC", [recipeId]);
+    return rows;
+}
+
+export async function getRecipeIngredients(recipeId: number) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeIngredients WHERE recipe_id = ?", [recipeId]);
+    return rows;
+}
+
+export async function getRecipeTags(recipeId: number) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeTags WHERE recipe_id = ?", [recipeId]);
+    return rows;
+}
+
 
 export async function getAllIngredients() {
     const [rows] = await db.query("SELECT * FROM Ingredients");
@@ -54,7 +73,7 @@ export async function getAllTags() {
 }
 
 //delete
-export async function deleteRecipe(id: Id) {
+export async function deleteRecipe(id: number) {
     await db.query("DELETE FROM Recipes WHERE id = ?", [id]);
 }
 
@@ -76,6 +95,17 @@ export async function insertTag(emertimi: string) {
     );
     return res.insertId;
 }
+
+export async function deleteTag(tag_id: number) {
+    const [res] = await db.query<ResultSetHeader>("DELETE FROM Tags WHERE id = ?", [tag_id]);
+    return res.affectedRows > 0;
+}
+
+export async function deleteIngredient(ingredient_id: number) {
+    const [res] = await db.query<ResultSetHeader>("DELETE FROM Ingredients WHERE id = ?", [ingredient_id]);
+    return res.affectedRows > 0;
+}
+
 
 
 export async function getPopularRecipes() {
