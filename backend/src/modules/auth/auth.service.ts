@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { UnauthorizedError } from "../../common/http-errors.js";
-import type { Id, LoginData, User, UserProfile, SignUpData } from "../../common/types/index.js";
+import type {  LoginData, User, UserProfile, SignUpData } from "../../common/types/index.js";
 import * as UserModel from "../user/user.model.js";
 import * as UserService from "../user/user.service.js";
 import * as TokenModel from "./token.model.js";
@@ -13,14 +13,18 @@ type LoginResult = {
     refreshToken: string;
 };
 
-export async function signup(userData: SignUpData): Promise<Id> {
-    return UserService.createUser({
+export async function signup(userData: SignUpData): Promise<User> {
+    const user = await UserService.createUser({
         emri: userData.emri,
         mbiemri: userData.mbiemri,
         email: userData.email,
         password: userData.password,
         ...(userData.phone_number !== undefined ? { phone_number: userData.phone_number } : {}),
     });
+
+    if (!user) 
+        throw new Error("Failed to create user");
+    return user;
 }
 
 export async function login(userData: LoginData): Promise<LoginResult | null> {
@@ -83,7 +87,7 @@ async function authenticate(userData: LoginData): Promise<User | null> {
     return foundUser;
 }
 
-async function generateAccessToken(userId: Id): Promise<string> {
+async function generateAccessToken(userId: number): Promise<string> {
     const payload = {
         sub: userId,
         roles: await UserModel.getUserRoles(userId),
@@ -96,17 +100,17 @@ function generateRefreshToken(): string {
     return crypto.randomBytes(40).toString("hex");
 }
 
-async function createRefreshToken(userId: Id): Promise<string> {
+async function createRefreshToken(userId: number): Promise<string> {
     const token = generateRefreshToken();
     await TokenModel.saveRefreshToken(userId, token);
     return token;
 }
 
-async function markRefreshTokenAsUsed(token: string): Promise<Id | null> {
+async function markRefreshTokenAsUsed(token: string): Promise<number | null> {
     return TokenModel.markRefreshTokenAsUsed(token);
 }
 
-async function validateRefreshToken(token: string): Promise<Id> {
+async function validateRefreshToken(token: string): Promise<number> {
     const foundToken = await TokenModel.findRefreshToken(token);
     if (!foundToken) {
         throw new UnauthorizedError("INVALID_REFRESH_TOKEN", "The provided refresh token is invalid.");
@@ -118,6 +122,6 @@ async function validateRefreshToken(token: string): Promise<Id> {
         throw new UnauthorizedError("EXPIRED_REFRESH_TOKEN", "The provided refresh token has expired.");
     }
 
-    return foundToken.user_id as Id;
+    return foundToken.user_id;
 }
 

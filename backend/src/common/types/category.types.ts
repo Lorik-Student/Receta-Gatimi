@@ -1,7 +1,5 @@
-import type { Id } from "./index.js";
-
 export interface Category {
-    id: Id;
+    id: number;
     emertimi: string;
     pershkrimi?: string;
     imazhi?: string;

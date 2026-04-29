@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
 import { HttpError } from "../http-errors.js";
+import type { RequestWithClaims } from "./auth.middleware.js";
 
 type ErrorPayload = {
     success: false;
@@ -15,7 +16,8 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
         return next(error);
     }
 
-    if (error instanceof HttpError) {
+    const claims = (_req as RequestWithClaims).claims;
+    if (error instanceof HttpError || claims?.roles?.includes("admin")) {
         const payload: ErrorPayload = {
             success: false,
             error: {

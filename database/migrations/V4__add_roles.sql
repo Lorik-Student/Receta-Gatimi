@@ -1,5 +1,4 @@
 INSERT INTO Roles (emertimi, pershkrimi, normalized_name) VALUES 
-    ('Vizitor', 'Përdorues i nivelit të ulët', 'guest'),
-    ('Perdorues', 'Përdorues i nivelit të mesëm', 'user'),
-    ('Kuzhinier', 'Përdorues me akses në recetat e gatimit', 'chef'),
-    ('Administrator', 'Përdorues i nivelit të lartë', 'admin');
+    ('Perdorues', 'Përdorues i thjeshtë i sistemit i cili mund të shfletojë përmbajtjen, të kryejë porosi, dhe të menaxhojë profilin e tij personal, por nuk ka të drejta modifikimi në platformë.', 'user'),
+    ('Kuzhinier', 'Përdorues i specializuar që ka akses të plotë në panelin e kuzhinës, ku mund të menaxhojë recetat e gatimit, të përditësojë menytë, si dhe të ndjekë statusin e porosive aktive.', 'chef'),
+    ('Administrator', 'Përdorues i nivelit të lartë me qasje totale në të gjitha modulet e sistemit, përfshirë menaxhimin e përdoruesve të tjerë, dhënien e roleve, cilësimet globale dhe shikimin e raporteve.', 'admin');

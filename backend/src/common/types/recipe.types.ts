@@ -1,7 +1,5 @@
-import type { Id } from "./index.js";
-
 export interface Recipe {
-    id: Id;
+    id: number;
     titulli: string;
     pershkrimi: string;
     koha_pergatitjes: number;
@@ -9,12 +7,12 @@ export interface Recipe {
     porcione: number;
     veshtiresija: "Easy" | "Medium" | "Hard";
     imazhi?: string;
-    user_id: Id;
-    category_id: Id;
+    user_id: number;
+    category_id: number;
 }
 
 export interface RecipeIngredient {
-    ingredient_id: Id;
+    ingredient_id: number;
     sasia: number;
     njesia: string;
 }
@@ -26,10 +24,17 @@ export interface RecipeStep {
 }
 
 export interface Review {
-    id: Id;
-    recipe_id: Id;
-    user_id: Id;
+    id: number;
+    recipe_id: number;
+    user_id: number;
     vleresimi: number;
     komenti: string;
+    data: Date;
+}
+
+export interface Favorite {
+    id: number;
+    user_id: number;
+    recipe_id: number;
     data: Date;
 }

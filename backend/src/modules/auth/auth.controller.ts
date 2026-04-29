@@ -11,12 +11,12 @@ function getRefreshToken(req: Request): string {
 }
 
 export async function signup(req: Request, res: Response) { 
-    const userId = await Service.signup(req.body);
+    const user = await Service.signup(req.body);
 
     return res.status(201)
                 .json({ success: true,
-                     id: userId,
-                      message: "Përdoruesi u krijua me sukses" });
+                        message: "Përdoruesi u krijua me sukses",
+                        user });
     
 }
 
@@ -24,7 +24,8 @@ export async function login(req: Request, res: Response) {
     const session = await Service.login(req.body);
     if (!session) {
         return res.status(401)
-            .json({ success: false, message: "Identifikimi dështoi. Ju lutemi provoni përsëri." });
+            .json({ success: false, 
+                message: "Identifikimi dështoi. Ju lutemi provoni përsëri." });
     }
 
     const { accessToken, refreshToken, user } = session;

@@ -5,9 +5,6 @@ export type SignUpData = ZodInfer<typeof signUpBodySchema>;
 
 export type LoginData = ZodInfer<typeof loginBodySchema>;
 
-
-export type Id = number & { __brand: "Id"};
-
 export * from "./user.types.js";
 export * from "./category.types.js";
 export * from "./recipe.types.js";

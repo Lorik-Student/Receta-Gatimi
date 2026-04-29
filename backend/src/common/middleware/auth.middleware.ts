@@ -6,7 +6,7 @@ export type RequestWithClaims = Request & { claims: JwtPayload };
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-export const authMiddleware: RequestHandler = async (req: Request, res: Response, next: NextFunction) => { 
+export const authenticateMiddleware: RequestHandler = async (req: Request, res: Response, next: NextFunction) => { 
     const authorization = req.header("authorization");
     const JWToken = authorization?.startsWith("Bearer ") ? authorization.slice(7) : undefined;
     if (!JWToken) 
@@ -30,6 +30,7 @@ export const authMiddleware: RequestHandler = async (req: Request, res: Response
 };
 
 
+// Authorizimi per admin
 const adminOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
     const claims = (req as RequestWithClaims).claims;
     if (!claims || !claims.roles || !claims.roles.includes("admin")) {
@@ -38,6 +39,7 @@ const adminOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: 
     next();
 };
 
+// Authorizimi per perdoruesit me rolin "user"
 const userOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
     const claims = (req as RequestWithClaims).claims;
     if (!claims || !claims.roles || !claims.roles.includes("user")) {
@@ -46,6 +48,15 @@ const userOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: N
     next();
 };
 
+const chefOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+    const claims = (req as RequestWithClaims).claims;
+    if (!claims || !claims.roles || !claims.roles.includes("chef")) {
+        throw new ForbiddenError("CHEF_ACCESS_REQUIRED", "Qasja lejohet vetëm për kuzhinierët.");
+    }
+    next();
+};
+
 // Kombinohen middlware-t ne nje
-export const adminAuthMiddleware = [authMiddleware, adminOnlyMiddleware];
-export const userAuthMiddleware = [authMiddleware, userOnlyMiddleware];
+export const adminAuthMiddleware = [authenticateMiddleware, adminOnlyMiddleware];
+export const userAuthMiddleware = [authenticateMiddleware, userOnlyMiddleware];
+export const chefAuthMiddleware = [authenticateMiddleware, chefOnlyMiddleware];

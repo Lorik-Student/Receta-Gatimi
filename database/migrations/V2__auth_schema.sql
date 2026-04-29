@@ -28,23 +28,6 @@ CREATE TABLE UserRoles (
     FOREIGN KEY (role_id) REFERENCES Roles(id) ON DELETE CASCADE
 );
 
-CREATE TABLE UserClaims (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    claim_type VARCHAR(255),
-    claim_value TEXT,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE UserTokens (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED NOT NULL,
-    login_provider VARCHAR(100),
-    token_name VARCHAR(100),
-    token_value TEXT,
-    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
-);
-
 CREATE TABLE RefreshTokens (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,

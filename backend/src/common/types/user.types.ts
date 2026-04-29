@@ -1,5 +1,3 @@
-import type { Id } from "./index.js";
-
 export enum UserRole {
     guest = "guest",
     user = "user",
@@ -7,28 +5,8 @@ export enum UserRole {
     admin = "admin"
 }
 
-export function roleToId(role: UserRole): Id {
-    switch (role) {
-        case UserRole.guest: return 1 as Id;
-        case UserRole.user: return 2 as Id;
-        case UserRole.chef: return 3 as Id;
-        case UserRole.admin: return 4 as Id;
-    } 
-}
-
-export function roleIdToRole(roleId: Id): UserRole | null {
-    switch (roleId) {
-        case 1: return UserRole.guest;
-        case 2: return UserRole.user;
-        case 3: return UserRole.chef;
-        case 4: return UserRole.admin;
-        default: return null;
-    }
-}
-
-
 export interface User {
-    id: Id;
+    id: number;
     emri: string;
     mbiemri: string;
     email: string;
@@ -43,7 +21,7 @@ export interface User {
 }
 
 export interface UserProfile {
-    id: Id;
+    id: number;
     emri: string;
     mbiemri: string;
     email: string;

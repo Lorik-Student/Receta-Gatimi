@@ -1,11 +1,12 @@
 import type { ResultSetHeader, RowDataPacket, PoolConnection } from "mysql2/promise";
 import db from "../../config/db.js";
-import type { Id, UserInsertTable } from "../../common/types/index.js";
+import type {  UserInsertTable } from "../../common/types/index.js";
 import {
     UserRole,
     type User,
     type UserProfile,
 } from "../../common/types/user.types.js";
+import { assert } from "node:console";
 
 export const USER_TABLE      = "users";
 export const USER_ROLE_TABLE = "userroles";
@@ -54,7 +55,7 @@ const USER_PROFILE_SELECT = `
             LEFT JOIN ${ROLE_TABLE} r ON r.id = ur.role_id
 `;
 
-export async function getUserRoles(userId: Id): Promise<UserRole[]> {
+export async function getUserRoles(userId: number): Promise<UserRole[]> {
     const query = `
         SELECT GROUP_CONCAT(DISTINCT r.normalized_name) AS roles
         FROM ${USER_ROLE_TABLE} ur
@@ -66,24 +67,29 @@ export async function getUserRoles(userId: Id): Promise<UserRole[]> {
     return rows[0]?.roles ? (rows[0].roles as string).split(",") as UserRole[] : [];
 }
 
-export async function addRoleToUser(userId: Id, role: UserRole, prevConn?: PoolConnection): Promise<void> {
+export async function addRolesToUser(userId: number, roles: UserRole[], prevConn?: PoolConnection): Promise<void> {
+    assert(roles.length > 0, "At least one role must be provided.");
+
     const conn = prevConn ?? await db.getConnection();
     const isLocalConnection = !prevConn;
 
     try {
         const [roleRows] = await conn.query<RowDataPacket[]>(
-            `SELECT id FROM ${ROLE_TABLE} WHERE normalized_name = ? LIMIT 1`,
-            [role],
+            `SELECT id FROM ${ROLE_TABLE} WHERE normalized_name = ? `,
+            [roles],
         );
 
         if (!roleRows[0]) {
             return;
         }
 
-        await conn.query<ResultSetHeader>(
-            `INSERT IGNORE INTO ${USER_ROLE_TABLE} (user_id, role_id) VALUES (?, ?)`,
-            [userId, roleRows[0].id],
-        );
+        const userRolesData = roleRows.map((row) => [userId, row.id]);
+        if (userRolesData.length > 0) {  
+            await conn.query<ResultSetHeader>(
+                `INSERT IGNORE INTO ${USER_ROLE_TABLE} (user_id, role_id) VALUES ?`,
+                [userRolesData],
+            );
+        }
     } finally {
         if (isLocalConnection) {
             conn.release();
@@ -91,16 +97,15 @@ export async function addRoleToUser(userId: Id, role: UserRole, prevConn?: PoolC
     }
 }
 
-export async function replaceUserRoles(userId: Id, roles: UserRole[], prevConn?: PoolConnection): Promise<void> {
+export async function replaceUserRoles(userId: number, roles: UserRole[], prevConn?: PoolConnection): Promise<void> {
+    assert(roles.length > 0, "At least one role must be provided.");
+
     const conn = prevConn ?? await db.getConnection();
     const isLocalConnection = !prevConn;
 
     try {
         await conn.query<ResultSetHeader>(`DELETE FROM ${USER_ROLE_TABLE} WHERE user_id = ?`, [userId]);
-
-        for (const role of roles) {
-            await addRoleToUser(userId, role, conn);
-        }
+        await addRolesToUser(userId, roles, conn);
     } finally {
         if (isLocalConnection) {
             conn.release();
@@ -108,7 +113,7 @@ export async function replaceUserRoles(userId: Id, roles: UserRole[], prevConn?:
     }
 }
 
-export async function findUser(id: Id): Promise<User | null> {
+export async function findUser(id: number): Promise<User | null> {
     const [rows] = await db.query<RowDataPacket[]>(
         `${USER_WITH_ROLES_SELECT} WHERE u.id = ? GROUP BY u.id LIMIT 1`,
         [id],
@@ -131,7 +136,7 @@ export async function findAllUsers(): Promise<User[]> {
     return rows.map(mapUserRow);
 }
 
-export async function findUserProfile(id: Id): Promise<UserProfile | null> {
+export async function findUserProfile(id: number): Promise<UserProfile | null> {
     const [rows] = await db.query<RowDataPacket[]>(
         `${USER_PROFILE_SELECT} WHERE u.id = ? GROUP BY u.id LIMIT 1`,
         [id],
@@ -154,7 +159,7 @@ export async function existsByEmail(email: string): Promise<boolean> {
     return rows.length > 0;
 }
 
-export async function insertUser(user: UserInsertTable): Promise<User> {
+export async function insertUser(user: UserInsertTable): Promise<User | null> {
     const conn = await db.getConnection();
 
     try {
@@ -172,18 +177,15 @@ export async function insertUser(user: UserInsertTable): Promise<User> {
             ],
         );
 
-        const userId = result.insertId as Id;
-
-        for (const role of user.roles ?? []) {
-            await addRoleToUser(userId, role, conn);
-        }
-
+        const userId = result.insertId;
+        await addRolesToUser(userId, user.roles, conn);
+    
         const [rows] = await conn.query<RowDataPacket[]>(
             `${USER_WITH_ROLES_SELECT} WHERE u.id = ? GROUP BY u.id LIMIT 1`,
             [userId],
         );
 
-        if (!rows[0]) throw new Error("Inserted user could not be loaded.");
+        if (!rows[0]) return null;
 
         await conn.commit();
         return mapUserRow(rows[0]);
@@ -195,7 +197,7 @@ export async function insertUser(user: UserInsertTable): Promise<User> {
     }
 }
 
-export async function updateUser(id: Id, data: UserUpdateTable): Promise<User | null> {
+export async function updateUser(id: number, data: UserUpdateTable): Promise<User | null> {
     const keys = (Object.keys(data) as Array<keyof UserUpdateTable>)
         .filter((key) => data[key] !== undefined);
 
@@ -218,9 +220,10 @@ export async function updateUser(id: Id, data: UserUpdateTable): Promise<User | 
     return findUser(id);
 }
 
-export async function deleteUser(id: Id): Promise<boolean> { 
+export async function deleteUser(id: number): Promise<boolean> { 
     const [result] = await db.query<ResultSetHeader>(`DELETE FROM ${USER_TABLE} WHERE id = ?`, [id]);
-    return result.affectedRows > 0;
+    const [roleResult] = await db.query<ResultSetHeader>(`DELETE FROM ${USER_ROLE_TABLE} WHERE user_id = ?`, [id]);
+    return result.affectedRows > 0 && roleResult.affectedRows >= 0;
 }
 
 // Per dashboard: active authors

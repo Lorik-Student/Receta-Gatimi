@@ -1,8 +1,6 @@
-import type { Id } from "./index.js";
-
 export type RefreshToken = { 
-    id: Id;
-    user_id: Id;
+    id: number;
+    user_id: number;
     token: string;
     expires: Date;
     created: Date;
