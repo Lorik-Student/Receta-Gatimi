@@ -18,7 +18,7 @@ export const createRecipeBodySchema = z.object({
   koha_pergatitjes: z.coerce.number().int().nonnegative(),
   koha_gatimit: z.coerce.number().int().nonnegative(),
   porcione: z.coerce.number().int().positive(),
-  veshtiresija: z.enum(["Easy", "Medium", "Hard"]),
+  veshtiresija: z.enum(["Lehtë", "Mesatare", "Vështirë"]),
   imazhi: z.url().trim().max(1024).optional(),
   user_id: z.coerce.number().int().positive(),
   category_id: z.coerce.number().int().positive(),
