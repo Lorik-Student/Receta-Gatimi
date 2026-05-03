@@ -17,7 +17,7 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
     }
 
     const claims = (_req as RequestWithClaims).claims;
-    if (error instanceof HttpError || claims?.roles?.includes("admin")) {
+    if (error instanceof HttpError ) {
         const payload: ErrorPayload = {
             success: false,
             error: {
@@ -30,13 +30,11 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
         return res.status(error.statusCode).json(payload);
     }
 
-    console.error("Unhandled error:", error);
-
     return res.status(500).json({
         success: false,
         error: {
             code: "INTERNAL_SERVER_ERROR",
-            message: "Unexpected server error",
+            message: claims?.roles?.includes("admin") ? error.message :"Unexpected server error",
         }
     } satisfies ErrorPayload);
 };
