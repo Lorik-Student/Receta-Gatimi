@@ -1,6 +1,10 @@
 import * as RecipeModel from "./recipe.model.js";
 import * as UserModel from "../user/user.model.js";
 import { NotFoundError } from "../../common/http-errors.js";
+import { createRecipeBodySchema  } from "./recipe.schema.js";
+import {z} from "zod";
+
+export type CreateRecipeBody = z.infer<typeof createRecipeBodySchema>;
 
 export async function getDashboardData() {
     const popularRecipes = await RecipeModel.getPopularRecipes();
@@ -16,7 +20,7 @@ export async function getRecipe(id: number) {
     return recipe;
 }
 
-export const createRecipe = (data: any) => {
+export const createRecipe = (data: CreateRecipeBody) => {
     const { steps, ingredients, tags, ...recipeData } = data;
     return RecipeModel.insertFullRecipe(recipeData, steps, ingredients, tags);
 };
