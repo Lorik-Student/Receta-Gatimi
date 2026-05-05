@@ -33,8 +33,8 @@ export class ErrorBoundary extends Component<Props, State> {
 export function ErrorPage() { 
     return ( 
         <div style={{ padding: "2rem", textAlign: "center" }}>
-            <h1>Oops!</h1>
-            <p>Something went wrong. Please try again later.</p>
+            <h1>Obobo!</h1>
+            <p>Ndodhi një gabim. Ju lutemi provoni përsëri më vonë.</p>
         </div>
     )
 }

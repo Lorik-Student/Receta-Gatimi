@@ -1,6 +1,52 @@
-import { type ActionFunctionArgs, useActionData } from 'react-router-dom'
+import { type ActionFunctionArgs, redirect, useActionData } from 'react-router-dom'
 import { ENV } from "../config/env"
 import { FormCard, FormField } from '../components/FormCard';
+import { apiFetch, ErrorPayload } from '../api';
+
+function hasInvalidInputs(formData: FormData): ErrorPayload | null {
+    const emriRe = /^[A-Za-z]{2,}$/;
+    const mbiemriRe = /^[A-Za-z]{2,}$/;
+    const emailRe = /^[\w.-]+@[\w.-]+\.\w+$/;
+    const passwordRe = /^.{9,}$/; 
+    const phoneRe = /^\+?\d{10,15}$/;
+
+    if (!emriRe.test(formData.get("firstName") as string)) { 
+        return {success: false, error: { 
+            code: "INVALID_FIRST_NAME", 
+            message: "Emri është i pavlefshëm"
+        }};
+    }
+
+    if (!mbiemriRe.test(formData.get("lastName") as string)) { 
+        return {success: false, error: { 
+            code: "INVALID_LAST_NAME", 
+            message: "Mbiemri është i pavlefshëm"
+        }};
+    }
+
+    if (!emailRe.test(formData.get("email") as string)) { 
+        return {success: false, error: { 
+            code: "INVALID_EMAIL", 
+            message: "Emaili është i pavlefshëm"
+        }};
+    }
+
+    if (!passwordRe.test(formData.get("password") as string)) { 
+        return {success: false, error: { 
+            code: "INVALID_PASSWORD", 
+            message: "Fjalëkalimi është i pavlefshëm"
+        }};
+    }
+
+    if (!phoneRe.test(formData.get("phoneNumber") as string)) { 
+        return {success: false, error: { 
+            code: "INVALID_PHONE_NUMBER", 
+            message: "Numri i telefonit është i pavlefshëm"
+        }};
+    }
+
+    return null;
+}
 
 export async function SignupAction({request}: ActionFunctionArgs ): Promise<Response | any> { 
     const formData = await request.formData();
@@ -10,14 +56,22 @@ export async function SignupAction({request}: ActionFunctionArgs ): Promise<Resp
     const password = formData.get('password');
     const phone_number = formData.get('phoneNumber');
 
-    const response = await fetch(`${ENV.BACKEND_API_URL}/auth/signup`, {
+    const invalidInputs = hasInvalidInputs(formData);
+    if (invalidInputs) {
+        return invalidInputs;
+    }
+
+    const result = await apiFetch('/auth/signup', {
         method: 'post',
         headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify({emri, mbiemri, email, password, phone_number})
     });
 
-    const responseData = await response.json();
-    return responseData;
+    if (!result.success) {
+        return result as ErrorPayload;
+    }
+    console.log("Signup successful:", result);
+    return redirect("/");
 
 } 
 

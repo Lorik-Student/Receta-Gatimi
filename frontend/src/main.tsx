@@ -7,8 +7,8 @@ import './style/globals.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-        <ErrorBoundary fallback={<ErrorPage />}>
+        {/* <ErrorBoundary fallback={<ErrorPage />}> */}
           <RouterProvider router={router}/>
-        </ErrorBoundary>
+        {/* </ErrorBoundary> */}
   </StrictMode>,
 )

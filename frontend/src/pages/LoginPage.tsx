@@ -1,8 +1,7 @@
 import { ActionFunctionArgs, redirect, useActionData, useLoaderData } from "react-router-dom"
-import { ENV } from "../config/env"
-import { regex } from 'regex'
+import { apiFetch } from "../api";
 import { FormCard, FormField } from "../components/FormCard"
-
+import "../components/FormCard.css"
 
 export async function LoginAction({request}: ActionFunctionArgs ): Promise<Response | any> { 
     const formData = await request.formData();
@@ -26,22 +25,23 @@ export async function LoginAction({request}: ActionFunctionArgs ): Promise<Respo
         }};
     }
 
-    const response = await fetch(`${ENV.BACKEND_API_URL}/auth/login`, {
-        method: "POST", 
-        headers: {
-            "Content-Type": "application/json"
-        },
+    const result = await apiFetch(`/auth/login`, {
+        method: "POST",
         body: JSON.stringify({
             email: email,
             password: password,
         })
     });
 
-    const responseData = await response.json();
-    if (!response.ok) { 
-        return responseData;
+    if (!result.response.ok) { 
+        return result;
     }
 
+    const accessToken = result.accessToken as string;
+    const refreshToken = result.refreshToken as string;
+    localStorage.setItme("accessToken", accessToken);
+    localStorage.setItem("refereshToken", refreshToken);
+    
     return redirect("/");
 
 }

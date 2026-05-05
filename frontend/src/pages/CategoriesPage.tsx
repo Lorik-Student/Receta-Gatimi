@@ -1,14 +1,15 @@
 import { useLoaderData } from "react-router-dom";
-import { ENV } from "../config/env";
+import { apiFetch } from "../api";
 
 export async function categoriesLoader() {
-    const response = await fetch(`${ENV.BACKEND_API_URL}/categories`);
-    if (!response.ok) throw new Error("Failed to load categories");
-    return response.json();
+    const result = await apiFetch("/categories");
+    if (!result.response.ok) throw new Error("Failed to load categories");
+    return result;
 }
 
 export function CategoriesPage() {
-    const categories = useLoaderData() as any[];
+    const data = useLoaderData() as any;
+    const categories = Array.isArray(data) ? data : (data.data || Object.values(data).filter(v => typeof v === 'object' && v !== null && 'id' in v));
 
     return (
         <div>

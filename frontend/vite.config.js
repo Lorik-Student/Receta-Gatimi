@@ -5,8 +5,11 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/api': 'http://localhost:5000' // Matches your backend PORT
+    host: true, // Listen on all addresses
+    strictPort: true, // Fail if port 5173 is taken, preventing Vite from jumping to 5174
+    port: 5173,
+    hmr: {
+      clientPort: 5173, // Forces the HMR websocket to use the same port
     }
   }
 })

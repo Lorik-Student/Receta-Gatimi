@@ -23,14 +23,14 @@ export async function signup(userData: SignUpData): Promise<User> {
     });
 
     if (!user) 
-        throw new Error("Failed to create user");
+        throw new UnauthorizedError("USER_CREATION_FAILED", "Failed to create user");
     return user;
 }
 
-export async function login(userData: LoginData): Promise<LoginResult | null> {
+export async function login(userData: LoginData): Promise<LoginResult> {
     const authenticatedUser = await authenticate(userData);
     if (!authenticatedUser) {
-        return null;
+        throw new UnauthorizedError("INVALID_CREDENTIALS", "Emaili ose fjalëkalimi i dhënë është i pasaktë.");
     }
 
     const userId = authenticatedUser.id;
