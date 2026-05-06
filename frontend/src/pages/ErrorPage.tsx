@@ -1,4 +1,5 @@
 import { Component, ReactNode } from "react";
+import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 interface Props {
   children: ReactNode;
@@ -31,10 +32,27 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 
 export function ErrorPage() { 
+  const routeError = useRouteError();
+  const isApiOffline =
+    routeError instanceof Error &&
+    routeError.message.toLowerCase().includes("api");
+
+  let message = "Ndodhi një gabim. Ju lutemi provoni përsëri më vonë.";
+
+  if (isRouteErrorResponse(routeError)) {
+    message = `${routeError.status} ${routeError.statusText}`;
+  } else if (routeError instanceof Error && routeError.message) {
+    message = routeError.message;
+  }
+
+  if (isApiOffline) {
+    message = "Nuk mund te lidhemi me backend-in. Sigurohuni qe serveri API eshte i ndezur.";
+  }
+
     return ( 
         <div style={{ padding: "2rem", textAlign: "center" }}>
             <h1>Obobo!</h1>
-            <p>Ndodhi një gabim. Ju lutemi provoni përsëri më vonë.</p>
+      <p>{message}</p>
         </div>
     )
 }

@@ -7,7 +7,7 @@ const recipeStepSchema = z.object({
 }).strict();
 
 const recipeIngredientSchema = z.object({
-  ingredient_id: z.coerce.number().int().positive(),
+  emertimi: z.string().trim().min(1).max(100),
   sasia: z.coerce.number().positive(),
   njesia: z.string().trim().min(1).max(50)
 }).strict();
@@ -18,7 +18,7 @@ export const createRecipeBodySchema = z.object({
   koha_pergatitjes: z.coerce.number().int().nonnegative(),
   koha_gatimit: z.coerce.number().int().nonnegative(),
   porcione: z.coerce.number().int().positive(),
-  veshtiresija: z.enum(["Lehtë", "Mesatare", "Vështirë"]),
+  veshtiresija: z.enum(["Lehte", "Mesatare", "Veshtire"]),
   imazhi: z.url().trim().max(1024).optional(),
   user_id: z.coerce.number().int().positive(),
   category_id: z.coerce.number().int().positive(),

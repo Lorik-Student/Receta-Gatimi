@@ -23,7 +23,7 @@ CREATE TABLE Recipes (
     koha_pergatitjes INT,
     koha_gatimit INT,
     porcione INT,
-    veshtiresija ENUM('Lehtë', 'Mesatare', 'Vështirë'),
+    veshtiresija ENUM('Lehte', 'Mesatare', 'Veshtire'),
     imazhi VARCHAR(255),
     user_id INT,
     category_id INT,

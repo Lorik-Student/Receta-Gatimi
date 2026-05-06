@@ -5,7 +5,7 @@ import { SignupAction, SignupPage } from "./pages/SignupPage";
 import { ErrorPage } from "./pages/ErrorPage";
 import { RecipesPage, recipesLoader } from "./pages/RecipesPage";
 import { RecipePage, recipeLoader } from "./pages/RecipePage";
-import { CreateRecipePage, createRecipeAction } from "./pages/CreateRecipePage";
+import { CreateRecipePage, createRecipeAction, createRecipeLoader } from "./pages/CreateRecipePage";
 import { CategoriesPage, categoriesLoader } from "./pages/CategoriesPage";
 import { ProfilePage, profileLoader } from "./pages/ProfilePage";
 
@@ -24,6 +24,11 @@ export const router = createBrowserRouter([
     {
         element: <RootLayout />,
         errorElement: <ErrorPage />,
+        hydrateFallbackElement: (
+            <div style={{ padding: "2rem", textAlign: "center" }}>
+                Loading...
+            </div>
+        ),
         children: [
             {
                 path: "/",
@@ -52,6 +57,7 @@ export const router = createBrowserRouter([
             {
                 path: "/recipes/create",
                 element: <CreateRecipePage />,
+                loader: createRecipeLoader,
                 action: createRecipeAction
             },
             {

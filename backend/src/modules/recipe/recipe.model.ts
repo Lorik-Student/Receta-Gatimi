@@ -17,8 +17,21 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
             await conn.query(`INSERT INTO RecipeSteps (recipe_id, hapi_nr, pershkrimi, imazhi) VALUES ?`, [stepValues]);
         }
         if (ingredients.length) {
-            const ingValues = ingredients.map(i => [recipeId, i.ingredient_id, i.sasia, i.njesia]);
-            await conn.query(`INSERT INTO RecipeIngredients (recipe_id, ingredient_id, sasia, njesia) VALUES ?`, [ingValues]);
+            const ingValues = [];
+            for (const i of ingredients) {
+                let ingredientId;
+                const [existing] = await conn.query<RowDataPacket[]>("SELECT id FROM Ingredients WHERE emertimi = ?", [i.emertimi]);
+                if (existing.length > 0) {
+                    ingredientId = existing[0].id;
+                } else {
+                    const [newIng] = await conn.query<ResultSetHeader>("INSERT INTO Ingredients (emertimi) VALUES (?)", [i.emertimi]);
+                    ingredientId = newIng.insertId;
+                }
+                ingValues.push([recipeId, ingredientId, i.sasia, i.njesia]);
+            }
+            if (ingValues.length > 0) {
+                await conn.query(`INSERT INTO RecipeIngredients (recipe_id, ingredient_id, sasia, njesia) VALUES ?`, [ingValues]);
+            }
         }
         if (tags.length) {
             const tagValues = tags.map(tagId => [recipeId, tagId]);

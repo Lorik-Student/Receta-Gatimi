@@ -1,5 +1,5 @@
 import { Form } from 'react-router-dom'
-// import './FormCard.css'
+import './FormCard.css'
 
 interface FormCardProps extends React.FormHTMLAttributes<HTMLFormElement>{ 
     title: string,

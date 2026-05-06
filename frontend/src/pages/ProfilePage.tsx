@@ -1,6 +1,5 @@
 import { apiFetch } from "../api";
 import { useLoaderData, Link } from "react-router-dom";
-import "../components/FormCard.css"; 
 
 export interface UserProfile {
     id: number;

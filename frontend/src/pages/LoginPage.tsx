@@ -10,7 +10,7 @@ export async function LoginAction({request}: ActionFunctionArgs ): Promise<Respo
 
     const emailRe = /^[\w.-]+@[\w.-]+\.\w+$/;
     // const passwordRe = /^(?=.*\d)(?=.*[A-Z!@#$%^&*.]).{9,}$/;
-    const passwordRe = /^.{9,}$/; 
+    const passwordRe = /^.{8,}$/; 
 
     if(!emailRe.test(email)) { 
         return {error: { 
@@ -39,8 +39,8 @@ export async function LoginAction({request}: ActionFunctionArgs ): Promise<Respo
 
     const accessToken = result.accessToken as string;
     const refreshToken = result.refreshToken as string;
-    localStorage.setItme("accessToken", accessToken);
-    localStorage.setItem("refereshToken", refreshToken);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
     
     return redirect("/");
 
