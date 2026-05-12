@@ -91,7 +91,7 @@ async function generateAccessToken(userId: number): Promise<string> {
     const payload = {
         sub: userId,
         roles: await UserModel.getUserRoles(userId),
-        exp: Math.floor(Date.now() / 1000) + (15 * 60),
+        exp: Math.floor(Date.now() / 1000) + (15 * 60), //(15 * 60)
     };
     return jwt.sign(payload, process.env.JWT_SECRET as string);
 }

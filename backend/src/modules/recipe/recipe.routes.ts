@@ -8,6 +8,7 @@ router.get("/dashboard", RecipeController.getDashboard);
 
 // Recipe Management
 router.get("/", RecipeController.getRecipes);
+router.get("/tags", RecipeController.getTags);
 router.get("/:id", RecipeController.getRecipe);
 router.post("/", chefAuthMiddleware, RecipeController.createFullRecipe);
 router.delete("/:id", chefAuthMiddleware, RecipeController.deleteRecipe);

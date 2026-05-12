@@ -1,18 +1,20 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { NavigationBar } from "./components/NavigationBar";
-import { LoginAction, LoginPage } from "./pages/LoginPage";
-import { SignupAction, SignupPage } from "./pages/SignupPage";
+import { LoginAction, LoginPage } from "./pages/LoginPage.jsx";
+import { SignupAction, SignupPage } from "./pages/SignupPage.jsx";
 import { ErrorPage } from "./pages/ErrorPage";
+import { HomePage } from "./pages/HomePage";
 import { RecipesPage, recipesLoader } from "./pages/RecipesPage";
 import { RecipePage, recipeLoader } from "./pages/RecipePage";
-import { CreateRecipePage, createRecipeAction, createRecipeLoader } from "./pages/CreateRecipePage";
+import { CreateRecipePage, createRecipeAction, createRecipeLoader } from "./pages/CreateRecipePage.jsx";
 import { CategoriesPage, categoriesLoader } from "./pages/CategoriesPage";
-import { ProfilePage, profileLoader } from "./pages/ProfilePage";
+import { ProfilePage, profileLoader } from "./pages/ProfilePage.jsx";
+import { AboutUsPage } from "./pages/AboutUsPage";
 
 function RootLayout() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-            <NavigationBar />
+            {/* <NavigationBar /> */}
             <main style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                 <Outlet />
             </main>
@@ -26,13 +28,13 @@ export const router = createBrowserRouter([
         errorElement: <ErrorPage />,
         hydrateFallbackElement: (
             <div style={{ padding: "2rem", textAlign: "center" }}>
-                Loading...
+                Duke u ngarkuar...
             </div>
         ),
         children: [
             {
                 path: "/",
-                element: <h1>Home Page</h1>,
+                element: <HomePage />,
             },
             {
                 path: "/login",
@@ -64,6 +66,10 @@ export const router = createBrowserRouter([
                 path: "/categories",
                 element: <CategoriesPage />,
                 loader: categoriesLoader
+            },
+            {
+                path: "/about",
+                element: <AboutUsPage />
             },
             {
                 path: "/profile",

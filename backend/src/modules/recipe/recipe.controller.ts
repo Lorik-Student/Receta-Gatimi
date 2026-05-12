@@ -17,6 +17,11 @@ export async function getRecipes(req: Request, res: Response) {
     res.json(recipes);
 }
 
+export async function getTags(req: Request, res: Response) {
+    const tags = await RecipeService.fetchTags();
+    res.json(tags);
+}
+
 export async function getRecipe(req: Request, res: Response) {
     const id = Number(req.params.id as string);
     if (Number.isNaN(id) || id <= 0) {
