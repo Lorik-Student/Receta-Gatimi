@@ -19,7 +19,7 @@ export function FormCard({ title, children, submitionError, ...props }: FormCard
                 {children}
 
                 {submitionError && <div className="error-message">{submitionError}</div>}
-                <button type="submit">Submit</button>
+                <button type="submit">Dërgo</button>
             </Form>
 
         </div>
