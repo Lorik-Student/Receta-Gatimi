@@ -35,7 +35,7 @@ export const Cards: React.FC<CardsProps> = ({ items }) => {
               </span>
             </div>
 
-            <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-on-surface-variant hover:text-primary shadow-sm transition-colors" aria-label="Save recipe">
+            <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full text-on-surface-variant hover:text-primary shadow-sm transition-colors" aria-label="Ruaj recetën">
               <span className="material-symbols-outlined text-[20px]">favorite</span>
             </button>
           </div>

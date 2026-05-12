@@ -13,18 +13,18 @@ type FooterProps = {
 
 const defaultSections: FooterLinkSection[] = [
   {
-    title: 'Explore',
-    links: ['All Recipes', 'Trending', 'Collections', 'Submit Recipe'],
+    title: 'Eksploro',
+    links: ['Të gjitha recetat', 'Në trend', 'Koleksione', 'Dërgo recetë'],
   },
   {
-    title: 'Company',
-    links: ['About Us', 'Careers', 'Privacy Policy', 'Terms of Service'],
+    title: 'Kompania',
+    links: ['Rreth nesh', 'Karriera', 'Politika e privatësisë', 'Kushtet e përdorimit'],
   },
 ];
 
 export const Footer: React.FC<FooterProps> = ({
   brand = 'Receta Gatimi',
-  description = 'Your ultimate destination for cooking inspiration. Discover, save, and share your favorite recipes with food lovers worldwide.',
+  description = 'Destinacioni yt për frymëzim në gatim. Zbulo, ruaj dhe shpërnda recetat e tua të preferuara me dashamirësit e ushqimit.',
   sections = defaultSections,
 }) => {
   return (
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
 
       <div className="max-w-container-max-width mx-auto px-margin-desktop mt-12 pt-6 border-t border-outline-variant/30 text-center font-body-sm text-on-surface-variant">
-        &copy; 2026 {brand}. All rights reserved.
+        &copy; 2026 {brand}. Të gjitha të drejtat e rezervuara.
       </div>
     </footer>
   );

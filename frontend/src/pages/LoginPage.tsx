@@ -4,13 +4,6 @@ import { apiFetch, SuccessPayload } from "../api";
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
-const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Recipes", to: "/recipes" },
-  { label: "Categories", to: "/categories" },
-  { label: "About Us", to: "/about" },
-];
-
 export async function LoginAction({ request }: ActionFunctionArgs): Promise<Response | any> {
   const formData = await request.formData();
   const email = formData.get("email") as string;
@@ -63,26 +56,26 @@ export function LoginPage() {
     
     return (
         <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">
-            <Header brand="Receta Gatimi" navItems={navItems} />
+            <Header brand="Receta Gatimi" />
             <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-md w-full bg-surface rounded-2xl shadow-sm border border-outline-variant/30 p-8">
                     <div className="text-center mb-8">
                         <div className="inline-flex bg-primary/10 p-3 rounded-full mb-4">
                              <span className="material-symbols-outlined text-primary text-3xl">login</span>
                         </div>
-                        <h2 className="font-display-sm text-on-surface">Welcome Back</h2>
-                        <p className="font-body-md text-on-surface-variant mt-2">Please login to your account to continue</p>
+                        <h2 className="font-display-sm text-on-surface">Mirë se u rikthyet</h2>
+                        <p className="font-body-md text-on-surface-variant mt-2">Ju lutem hyni në llogarinë tuaj për të vazhduar</p>
                     </div>
 
                     <Form method="post" className="space-y-6">
                         {isSubmissionError && (
                             <div className="bg-error/10 text-error px-4 py-3 rounded-xl text-sm font-label-md flex items-center gap-2">
                                 <span className="material-symbols-outlined text-[20px]">error</span>
-                                {actionData?.error?.message || "Invalid credentials."}
+                                {actionData?.error?.message || "Kredenciale të pavlefshme."}
                             </div>
                         )}
                         <div>
-                            <label className="block font-label-md text-on-surface mb-2">Email Address</label>
+                            <label className="block font-label-md text-on-surface mb-2">Adresa e emailit</label>
                             <input 
                                 type="email" 
                                 name="email" 
@@ -94,7 +87,7 @@ export function LoginPage() {
                         </div>
 
                         <div>
-                            <label className="block font-label-md text-on-surface mb-2">Password</label>
+                            <label className="block font-label-md text-on-surface mb-2">Fjalëkalimi</label>
                             <input 
                                 type="password" 
                                 name="password" 
@@ -109,15 +102,15 @@ export function LoginPage() {
                             type="submit" 
                             className="w-full bg-primary hover:bg-primary/90 text-white font-label-lg py-3 rounded-xl transition-colors shadow-md mt-4"
                         >
-                            Sign In
+                            Hyr
                         </button>
                     </Form>
 
                     <div className="mt-8 text-center border-t border-outline-variant/30 pt-6">
                         <p className="text-on-surface-variant font-body-sm">
-                            Don't have an account?{' '}
+                            Nuk keni një llogari?{' '}
                             <Link to="/signup" className="text-primary font-label-md hover:underline">
-                                Register now
+                                Regjistrohu tani
                             </Link>
                         </p>
                     </div>

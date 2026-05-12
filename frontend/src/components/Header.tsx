@@ -8,17 +8,22 @@ type HeaderNavItem = {
 
 type HeaderProps = {
   brand: string;
-  navItems: HeaderNavItem[];
   activePath?: string;
   userName?: string;
   avatarUrl?: string;
 };
 
+const navItems: HeaderNavItem[] = [
+  { label: 'Kryefaqja', to: '/' },
+  { label: 'Receta', to: '/recipes' },
+  { label: 'Kategoritë', to: '/categories' },
+  { label: 'Rreth nesh', to: '/about' },
+];
+
 export const Header: React.FC<HeaderProps> = ({
   brand,
-  navItems,
   activePath = '/',
-  userName = 'My Profile',
+  userName = 'Profili im',
   avatarUrl,
 }) => {
   const isAuthenticated = !!localStorage.getItem('accessToken');
@@ -31,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
             {brand}
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
+          <nav className="hidden md:flex items-center gap-8" aria-label="Navigimi kryesor">
             {navItems.map((item) => {
               const isActive = item.to === activePath;
 
@@ -53,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-6">
-          <button className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer" aria-label="Notifications">
+          <button className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer" aria-label="Njoftime">
             <span className="material-symbols-outlined text-[24px]">notifications</span>
           </button>
 
@@ -72,10 +77,10 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <div className="flex items-center gap-3">
                 <Link to="/login" className="font-label-md text-on-surface hover:text-primary transition-colors px-3 py-2">
-                  Log in
+                  Hyr
                 </Link>
                 <Link to="/signup" className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-full font-label-md transition-colors shadow-sm">
-                  Sign up
+                  Regjistrohu
                 </Link>
               </div>
             )}

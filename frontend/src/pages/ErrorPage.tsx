@@ -20,18 +20,17 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("Boundary caught:", error, info);
-    // send to Sentry, Datadog, etc.
   }
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback ?? <p>Something went wrong.</p>;
+      return this.props.fallback ?? <p>Diçka shkoi keq.</p>;
     }
     return this.props.children;
   }
 }
 
-export function ErrorPage() { 
+export function ErrorPage() {
   const routeError = useRouteError();
   const isApiOffline =
     routeError instanceof Error &&
@@ -49,10 +48,10 @@ export function ErrorPage() {
     message = "Nuk mund të lidhemi me backend-in. Sigurohuni që serveri API është i ndezur.";
   }
 
-    return ( 
-        <div style={{ padding: "2rem", textAlign: "center" }}>
-            <h1>Obobo!</h1>
+  return (
+    <div style={{ padding: "2rem", textAlign: "center" }}>
+      <h1>Obobo!</h1>
       <p>{message}</p>
-        </div>
-    )
+    </div>
+  );
 }
