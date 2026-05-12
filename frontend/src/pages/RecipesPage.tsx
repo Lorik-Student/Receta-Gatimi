@@ -1,49 +1,73 @@
+import React from "react";
 import { useLoaderData, Link } from "react-router-dom";
 import { apiFetch } from "../api";
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
+import { Cards, RecipeCardData } from '../components/Cards';
+
+const RECIPE_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80";
+
+const navItems = [
+  { label: 'Home', to: '/' },
+  { label: 'Recipes', to: '/recipes' },
+  { label: 'Categories', to: '/categories' },
+  { label: 'About Us', to: '/about' },
+];
 
 export async function recipesLoader() {
     const result = await apiFetch("/recipes");
     if (!result.ok) {
-        const message = "error" in result ? result.error.message : "Failed to load recipes";
-        throw new Error(message);
+        throw new Error((result as any).error?.message || "Dështoi ngarkimi i recetave");
     }
     return result;
 }
 
 export function RecipesPage() {
     const data = useLoaderData() as any;
-    const recipes = Array.isArray(data) ? data : (data.data || Object.values(data).filter(v => typeof v === 'object' && v !== null && 'id' in v));
+    const recipes = Array.isArray(data) ? data : (data.data || Object.values(data).filter(v => typeof v === "object" && v !== null && "id" in v));
+
+    const recipeCards: RecipeCardData[] = recipes.map((r: any) => ({
+        title: r.titulli || r.title || "Recetë pa titull",
+        description: r.pershkrimi || r.description || "Nuk ka përshkrim.",
+        image: r.imazhi || RECIPE_FALLBACK_IMAGE,
+        badge: 'Recipe',
+        time: `${r.koha_pergatitjes || 0} Min`,
+        difficulty: 'Medium',
+        rating: '4.8',
+    }));
 
     return (
-        <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                <h1>Recetat (Recipes)</h1>
-                <Link to="/recipes/create" style={{ padding: "10px 15px", backgroundColor: "#007BFF", color: "white", textDecoration: "none", borderRadius: "5px" }}>
-                    Create New Recipe
-                </Link>
-            </div>
-            
-            {recipes.length === 0 ? (
-                <p>Nuk ka asnjë recetë të krijuar akoma. (No recipes created yet.)</p>
-            ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
-                    {recipes.map((recipe: any) => (
-                        <div key={recipe.id} style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "15px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
-                            <h2 style={{ marginTop: 0, marginBottom: "10px" }}>
-                                <Link to={`/recipes/${recipe.id}`} style={{ textDecoration: "none", color: "#333" }}>
-                                    {recipe.titulli || recipe.title || "Untitled Recipe"}
-                                </Link>
-                            </h2>
-                            <p style={{ color: "#666", fontSize: "14px", marginBottom: "15px" }}>
-                                {recipe.pershkrimi || recipe.description || "Nuk ka përshkrim..."}
-                            </p>
-                            <Link to={`/recipes/${recipe.id}`} style={{ color: "#007BFF", fontWeight: "bold", textDecoration: "none" }}>
-                                View Details &rarr;
-                            </Link>
+        <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+            <Header brand="Receta Gatimi" navItems={navItems} activePath="/recipes" />
+            <main className="flex-1 max-w-container-max-width mx-auto px-margin-desktop py-12 w-full">
+                <div className="flex justify-between items-end mb-10 border-b border-outline-variant/30 pb-6">
+                    <div>
+                        <h2 className="font-display-lg text-on-surface mb-2">Recetat</h2>
+                        <p className="font-body-lg text-on-surface-variant">Një pamje moderne dhe e pastër për të gjitha recetat.</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-3">
+                        <div className="bg-surface border border-outline-variant/30 px-4 py-2 rounded-xl text-sm font-label-md">
+                            Total Recipe: <strong className="text-primary">{recipes.length}</strong>
                         </div>
-                    ))}
+                        <Link to="/recipes/create" className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-full font-label-md transition-colors">
+                            Krijo recetë të re
+                        </Link>
+                    </div>
                 </div>
-            )}
+
+                {recipeCards.length === 0 ? (
+                    <div className="text-center py-20 bg-surface rounded-2xl border border-outline-variant/20">
+                        <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-4">menu_book</span>
+                        <h3 className="font-headline-md text-on-surface mb-2">Nuk ka asnjë recetë.</h3>
+                        <Link to="/recipes/create" className="bg-secondary hover:bg-secondary/90 text-on-secondary px-6 py-3 rounded-full font-label-md transition-colors inline-block mt-4">
+                            Krijo të parën
+                        </Link>
+                    </div>
+                ) : (
+                    <Cards items={recipeCards} />
+                )}
+            </main>
+            <Footer />
         </div>
     );
 }

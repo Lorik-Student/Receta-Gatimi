@@ -46,7 +46,7 @@ export function ErrorPage() {
   }
 
   if (isApiOffline) {
-    message = "Nuk mund te lidhemi me backend-in. Sigurohuni qe serveri API eshte i ndezur.";
+    message = "Nuk mund të lidhemi me backend-in. Sigurohuni që serveri API është i ndezur.";
   }
 
     return ( 
