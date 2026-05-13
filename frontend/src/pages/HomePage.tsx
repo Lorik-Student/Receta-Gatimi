@@ -6,6 +6,12 @@ import { Cards, RecipeCardData } from '../components/Cards';
 import { Footer } from '../components/Footer';
 import './HomePage.css';
 
+type SearchBarProps = {
+  query: string;
+  onQueryChange: (value: string) => void;
+  onSearch: () => void;
+};
+
 const categories = [
   { label: 'Të gjitha recetat', isActive: true },
   { label: 'Parapjatë' },
@@ -17,6 +23,7 @@ const categories = [
 
 const featuredRecipes: RecipeCardData[] = [
   {
+    id: "1",
     title: 'Sallatë e freskët mesdhetare',
     description:
       'Një kombinim i freskët me kastravecë, domate, djathë feta dhe ullinj kalamata me vinegretë të lehtë.',
@@ -28,6 +35,7 @@ const featuredRecipes: RecipeCardData[] = [
     rating: '4.9',
   },
   {
+    "id": "2",
     title: 'Makarona me domate dhe borzilok',
     description:
       'Klasikë italiane me makarona al dente dhe salcë të pasur domatesh me borzilok të freskët.',
@@ -39,6 +47,7 @@ const featuredRecipes: RecipeCardData[] = [
     rating: '4.8',
   },
   {
+    id: "3",
     title: 'Cheesecake me mana verore',
     description:
       'Cheesecake i butë stil New York me komposto të freskët manash verore.',
@@ -51,6 +60,23 @@ const featuredRecipes: RecipeCardData[] = [
   },
 ];
 
+const SearchBar: React.FC<SearchBarProps> = ({ query, onQueryChange, onSearch }) => (
+  <div className="flex bg-white rounded-full p-2 shadow-lg max-w-xl border border-transparent focus-within:border-primary/30 focus-within:ring-2 focus-within:ring-primary/15 transition-all">
+    <div className="flex-1 flex items-center pl-4 gap-3 border-r border-outline-variant/30">
+      <span className="material-symbols-outlined text-on-surface-variant">search</span>
+      <input
+        type="text"
+        placeholder="Kërko receta, përbërës..."
+        value={query}
+        onChange={(e) => onQueryChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') onSearch(); }}
+        className="w-full bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 appearance-none font-body-md text-on-surface placeholder:text-on-surface-variant/70 h-10"
+      />
+    </div>
+    <button onClick={onSearch} className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-label-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/25">Kërko</button>
+  </div>
+);
+
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -60,23 +86,6 @@ export const HomePage: React.FC = () => {
     if (!trimmed) return;
     navigate(`/recipes?q=${encodeURIComponent(trimmed)}`);
   };
-
-  const SearchBar: React.FC = () => (
-    <div className="flex bg-white rounded-full p-2 shadow-lg max-w-xl">
-      <div className="flex-1 flex items-center pl-4 gap-3 border-r border-outline-variant/30">
-        <span className="material-symbols-outlined text-on-surface-variant">search</span>
-        <input
-          type="text"
-          placeholder="Kërko receta, përbërës..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(query); }}
-          className="w-full bg-transparent border-none focus:ring-0 font-body-md text-on-surface placeholder:text-on-surface-variant/70 h-10"
-        />
-      </div>
-      <button onClick={() => doSearch(query)} className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-label-md transition-colors">Kërko</button>
-    </div>
-  );
 
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen">
@@ -100,7 +109,11 @@ export const HomePage: React.FC = () => {
                 Eksploro mijëra receta të shijshme të testuara nga kuzhinierë, për çdo rast.
               </p>
 
-              <SearchBar />
+              <SearchBar
+                query={query}
+                onQueryChange={setQuery}
+                onSearch={() => doSearch(query)}
+              />
             </div>
           </div>
         </section>
