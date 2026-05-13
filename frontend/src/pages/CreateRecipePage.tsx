@@ -1,4 +1,4 @@
-﻿import React, { useState, FormEvent } from "react";
+﻿import React, { useState, FormEvent, useEffect } from "react";
 import { redirect, useLoaderData, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Header } from '../components/Header';
@@ -34,7 +34,13 @@ export function CreateRecipePage() {
     const [cookTime, setCookTime] = useState("30");
     const [portions, setPortions] = useState("4");
     const [difficulty, setDifficulty] = useState("Mesatare");
-    const [categoryId, setCategoryId] = useState(categories?.[0]?.id || "");
+    const [categoryId, setCategoryId] = useState<string>("");
+
+    useEffect(() => {
+        if (categories && categories.length > 0 && categories[0].id != null) {
+            setCategoryId(String(categories[0].id));
+        }
+    }, [categories]);
 
     const [ingredients, setIngredients] = useState<Ingredient[]>([
         { id: "1", emertimi: "", sasia: "", njesia: "gr" }
@@ -107,7 +113,7 @@ export function CreateRecipePage() {
             porcione: Number(portions),
             veshtiresija: difficulty,
             imazhi: imageUrl || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80",
-            category_id: Number(categoryId),
+            category_id: categoryId ? Number(categoryId) : null,
             ingredients: ingredients.map(i => ({
                 emertimi: i.emertimi,
                 sasia: Number(i.sasia) || 1,
@@ -194,7 +200,7 @@ export function CreateRecipePage() {
                             <h3 className="font-headline-sm border-b border-outline-variant/30 pb-2">Kategori</h3>
                             <div>
                                 <label className="block font-label-md text-on-surface mb-2">Zgjidh kategorinë *</label>
-                                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full bg-surface-variant/20 border border-outline-variant/50 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required className="w-full bg-surface-variant/20 border border-outline-variant/50 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                                     <option value="">-- Zgjidh kategorinë --</option>
                                     {categories && categories.map((cat: any) => (
                                         <option key={cat.id} value={cat.id}>{cat.emertimi || cat.name}</option>

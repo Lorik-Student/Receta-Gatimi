@@ -1,6 +1,8 @@
 import { Router } from "express";
 import * as RecipeController from "./recipe.controller.js";
 import { chefAuthMiddleware, userAuthMiddleware } from "../../common/middleware/auth.middleware.js";
+import { validate } from "../../common/middleware/validate.middleware.js";
+import { createRecipeBodySchema } from "./recipe.schema.js";
 const router = Router();
 
 // Dashboard
@@ -10,7 +12,7 @@ router.get("/dashboard", RecipeController.getDashboard);
 router.get("/", RecipeController.getRecipes);
 router.get("/tags", RecipeController.getTags);
 router.get("/:id", RecipeController.getRecipe);
-router.post("/", chefAuthMiddleware, RecipeController.createFullRecipe);
+router.post("/", chefAuthMiddleware, validate({ body: createRecipeBodySchema }), RecipeController.createFullRecipe);
 router.delete("/:id", chefAuthMiddleware, RecipeController.deleteRecipe);
 
 

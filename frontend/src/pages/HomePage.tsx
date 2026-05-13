@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Header } from '../components/Header';
+import { useNavigate } from 'react-router-dom';
 import { NavigationBar } from '../components/NavigationBar';
 import { Cards, RecipeCardData } from '../components/Cards';
 import { Footer } from '../components/Footer';
@@ -51,6 +52,32 @@ const featuredRecipes: RecipeCardData[] = [
 ];
 
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+
+  const doSearch = (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) return;
+    navigate(`/recipes?q=${encodeURIComponent(trimmed)}`);
+  };
+
+  const SearchBar: React.FC = () => (
+    <div className="flex bg-white rounded-full p-2 shadow-lg max-w-xl">
+      <div className="flex-1 flex items-center pl-4 gap-3 border-r border-outline-variant/30">
+        <span className="material-symbols-outlined text-on-surface-variant">search</span>
+        <input
+          type="text"
+          placeholder="Kërko receta, përbërës..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') doSearch(query); }}
+          className="w-full bg-transparent border-none focus:ring-0 font-body-md text-on-surface placeholder:text-on-surface-variant/70 h-10"
+        />
+      </div>
+      <button onClick={() => doSearch(query)} className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-label-md transition-colors">Kërko</button>
+    </div>
+  );
+
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen">
       <Header brand="Receta Gatimi" activePath="/" />
@@ -73,17 +100,7 @@ export const HomePage: React.FC = () => {
                 Eksploro mijëra receta të shijshme të testuara nga kuzhinierë, për çdo rast.
               </p>
 
-              <div className="flex bg-white rounded-full p-2 shadow-lg max-w-xl">
-                <div className="flex-1 flex items-center pl-4 gap-3 border-r border-outline-variant/30">
-                  <span className="material-symbols-outlined text-on-surface-variant">search</span>
-                  <input
-                    type="text"
-                    placeholder="Kërko receta, përbërës..."
-                    className="w-full bg-transparent border-none focus:ring-0 font-body-md text-on-surface placeholder:text-on-surface-variant/70 h-10"
-                  />
-                </div>
-                <button className="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-label-md transition-colors">Kërko</button>
-              </div>
+              <SearchBar />
             </div>
           </div>
         </section>
