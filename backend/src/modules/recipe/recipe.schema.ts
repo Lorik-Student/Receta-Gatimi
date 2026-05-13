@@ -20,7 +20,6 @@ export const createRecipeBodySchema = z.object({
   porcione: z.coerce.number().int().positive(),
   veshtiresija: z.enum(["Lehte", "Mesatare", "Veshtire"]),
   imazhi: z.url().trim().max(1024).optional(),
-  user_id: z.coerce.number().int().positive(),
   category_id: z.coerce.number().int().positive(),
   steps: z.array(recipeStepSchema).min(1),
   ingredients: z.array(recipeIngredientSchema).min(1),

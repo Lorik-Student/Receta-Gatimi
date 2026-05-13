@@ -78,12 +78,22 @@ export async function getRecipeSteps(recipeId: number) {
 }
 
 export async function getRecipeIngredients(recipeId: number) {
-    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeIngredients WHERE recipe_id = ?", [recipeId]);
+    const [rows] = await db.query<RowDataPacket[]>(`
+        SELECT ri.*, i.emertimi 
+        FROM RecipeIngredients ri
+        JOIN Ingredients i ON ri.ingredient_id = i.id
+        WHERE ri.recipe_id = ?
+    `, [recipeId]);
     return rows;
 }
 
 export async function getRecipeTags(recipeId: number) {
-    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM RecipeTags WHERE recipe_id = ?", [recipeId]);
+    const [rows] = await db.query<RowDataPacket[]>(`
+        SELECT rt.*, t.emertimi 
+        FROM RecipeTags rt
+        JOIN Tags t ON rt.tag_id = t.id
+        WHERE rt.recipe_id = ?
+    `, [recipeId]);
     return rows;
 }
 

@@ -17,7 +17,19 @@ export async function getRecipe(id: number) {
     if (!recipe) {
         throw new NotFoundError("RECIPE_NOT_FOUND", "Recipe not found");
     }
-    return recipe;
+    
+    const [steps, ingredients, tags] = await Promise.all([
+        RecipeModel.getRecipeSteps(id),
+        RecipeModel.getRecipeIngredients(id),
+        RecipeModel.getRecipeTags(id)
+    ]);
+    
+    return {
+        ...recipe,
+        steps,
+        ingredients,
+        tags
+    };
 }
 
 export const createRecipe = (data: CreateRecipeBody) => {

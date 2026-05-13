@@ -7,7 +7,19 @@ import { Footer } from '../components/Footer';
 export async function createRecipeLoader() {
     const response = await apiFetch("/categories");
     if (!response.ok) throw new Error("Kategoritë nuk mund të ngarkoheshin");
-    return Array.isArray(response) ? response : (response as any).data;
+
+    if (Array.isArray(response)) {
+        return response;
+    }
+
+    const data = (response as any).data;
+    if (Array.isArray(data)) {
+        return data;
+    }
+
+    return Object.values(response as any).filter(
+        (value) => typeof value === "object" && value !== null && "id" in (value as Record<string, unknown>)
+    );
 }
 
 interface Ingredient {
