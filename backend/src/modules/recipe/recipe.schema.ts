@@ -24,5 +24,5 @@ export const createRecipeBodySchema = z.object({
   category_id: z.coerce.number().int().positive(),
   steps: z.array(recipeStepSchema).min(1),
   ingredients: z.array(recipeIngredientSchema).min(1),
-  tags: z.array(z.coerce.number().int().positive()).default([])
+  tags: z.array(z.string().trim().min(1).max(50)).default([])
 }).strict();

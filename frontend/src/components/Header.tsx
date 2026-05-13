@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 type HeaderNavItem = {
   label: string;
@@ -27,12 +27,21 @@ export const Header: React.FC<HeaderProps> = ({
   avatarUrl,
 }) => {
   const isAuthenticated = !!localStorage.getItem('accessToken');
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/recipes?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30">
-      <div className="max-w-container-max-width mx-auto px-margin-desktop h-20 flex items-center justify-between">
+      <div className="max-w-container-max-width mx-auto px-margin-desktop h-20 flex items-center justify-between gap-8">
         <div className="flex items-center gap-12">
-          <Link to="/" className="font-headline-md text-primary tracking-tight cursor-pointer">
+          <Link to="/" className="font-headline-md text-primary tracking-tight cursor-pointer whitespace-nowrap">
             {brand}
           </Link>
 
@@ -55,6 +64,23 @@ export const Header: React.FC<HeaderProps> = ({
               );
             })}
           </nav>
+        </div>
+
+        {/* Search Bar */}
+        <div className="hidden md:flex flex-1 max-w-xs">
+          <div className="w-full relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant text-[20px]">
+              search
+            </span>
+            <input
+              type="text"
+              placeholder="Kërko recetat..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="w-full pl-10 pr-4 py-2 bg-surface-variant/30 border border-outline-variant/50 rounded-full font-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all"
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-6">

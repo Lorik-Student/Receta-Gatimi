@@ -6,7 +6,7 @@ import { ErrorPage } from "./pages/ErrorPage";
 import { HomePage } from "./pages/HomePage";
 import { RecipesPage, recipesLoader } from "./pages/RecipesPage";
 import { RecipePage, recipeLoader } from "./pages/RecipePage";
-import { CreateRecipePage, createRecipeAction, createRecipeLoader } from "./pages/CreateRecipePage.jsx";
+import { CreateRecipePage, createRecipeLoader } from "./pages/CreateRecipePage.jsx";
 import { CategoriesPage, categoriesLoader } from "./pages/CategoriesPage";
 import { ProfilePage, profileLoader } from "./pages/ProfilePage.jsx";
 import { AboutUsPage } from "./pages/AboutUsPage";
@@ -59,8 +59,7 @@ export const router = createBrowserRouter([
             {
                 path: "/recipes/create",
                 element: <CreateRecipePage />,
-                loader: createRecipeLoader,
-                action: createRecipeAction
+                loader: createRecipeLoader
             },
             {
                 path: "/categories",

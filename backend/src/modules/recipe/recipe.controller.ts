@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import * as RecipeService from "./recipe.service.js";
 import { BadRequestError } from "../../common/http-errors.js";
+import type { RequestWithClaims } from "../../common/middleware/auth.middleware.js";
 
 export async function getDashboard(req: Request, res: Response) {
     const data = await RecipeService.getDashboardData();
@@ -8,7 +9,19 @@ export async function getDashboard(req: Request, res: Response) {
 }
 
 export async function createFullRecipe(req: Request, res: Response) {
-    const id = await RecipeService.createRecipe(req.body);
+    const claims = (req as RequestWithClaims).claims;
+    const userId = claims?.sub || claims?.id;
+    
+    if (!userId) {
+        throw new BadRequestError("INVALID_USER", "Nuk mund të përcaktohet përdoruesi aktual");
+    }
+
+    const payload = {
+        ...req.body,
+        user_id: userId
+    };
+
+    const id = await RecipeService.createRecipe(payload);
     res.status(201).json({ id, message: "Recipe created successfully" });
 }
 

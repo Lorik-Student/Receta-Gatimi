@@ -1,7 +1,7 @@
 import db from "../../config/db.js";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
 //create recipe
-export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: number[]) {
+export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: string[]) {
     const conn = await db.getConnection();
     try {
         await conn.beginTransaction();
@@ -34,8 +34,21 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
             }
         }
         if (tags.length) {
-            const tagValues = tags.map(tagId => [recipeId, tagId]);
-            await conn.query(`INSERT INTO RecipeTags (recipe_id, tag_id) VALUES ?`, [tagValues]);
+            const tagValues = [];
+            for (const tagName of tags) {
+                let tagId;
+                const [existing] = await conn.query<RowDataPacket[]>("SELECT id FROM Tags WHERE emertimi = ?", [tagName]);
+                if (existing.length > 0) {
+                    tagId = existing[0].id;
+                } else {
+                    const [newTag] = await conn.query<ResultSetHeader>("INSERT INTO Tags (emertimi) VALUES (?)", [tagName]);
+                    tagId = newTag.insertId;
+                }
+                tagValues.push([recipeId, tagId]);
+            }
+            if (tagValues.length > 0) {
+                await conn.query(`INSERT INTO RecipeTags (recipe_id, tag_id) VALUES ?`, [tagValues]);
+            }
         }
         await conn.commit();
         return recipeId;
