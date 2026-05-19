@@ -60,3 +60,13 @@ export async function deleteRecipe(req: Request, res: Response) {
     await RecipeService.removeRecipe(recipeId);
     res.json({ message: "Recipe deleted" });
 }
+
+export async function updateRecipe(req: Request, res: Response) {
+    const id = Number(req.params.id as string);
+    if (Number.isNaN(id) || id <= 0) {
+        throw new BadRequestError("INVALID_RECIPE_ID", "Invalid recipe id");
+    }
+
+    const recipe = await RecipeService.updateRecipe(id, req.body);
+    res.json({ success: true, recipe });
+}

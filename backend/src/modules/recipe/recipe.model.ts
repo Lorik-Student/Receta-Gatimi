@@ -113,6 +113,23 @@ export async function deleteRecipe(id: number) {
     await db.query("DELETE FROM Recipes WHERE id = ?", [id]);
 }
 
+export async function updateRecipe(id: number, recipeData: Partial<Record<string, unknown>>) {
+    const keys = Object.keys(recipeData).filter((key) => recipeData[key] !== undefined);
+    if (!keys.length) {
+        return false;
+    }
+
+    const setClause = keys.map((key) => `${key} = ?`).join(", ");
+    const values = keys.map((key) => recipeData[key]);
+
+    const [result] = await db.query<ResultSetHeader>(
+        `UPDATE Recipes SET ${setClause} WHERE id = ?`,
+        [...values, id]
+    );
+
+    return result.affectedRows > 0;
+}
+
 
 //create ingredient
 export async function insertIngredient(emertimi: string, njesia: string) {

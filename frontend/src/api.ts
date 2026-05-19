@@ -37,7 +37,8 @@ export const apiFetch = async (path: string, init: RequestInit = {}): Promise<Ap
         headers.set("Authorization", "Bearer " + accessToken)
 
     const response = await fetch(url, {...init, headers});
-    const payload: ApiPayload = await response.json();
+    const rawBody = await response.text();
+    const payload: ApiPayload = rawBody ? JSON.parse(rawBody) as ApiPayload : { success: response.ok };
 
     if (!payload.success && 'error' in payload) {
         const errorPayload = payload as ErrorPayload;

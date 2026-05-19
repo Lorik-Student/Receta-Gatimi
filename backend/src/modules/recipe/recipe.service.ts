@@ -1,10 +1,11 @@
 import * as RecipeModel from "./recipe.model.js";
 import * as UserModel from "../user/user.model.js";
 import { NotFoundError } from "../../common/http-errors.js";
-import { createRecipeBodySchema  } from "./recipe.schema.js";
+import { createRecipeBodySchema, updateRecipeBodySchema } from "./recipe.schema.js";
 import {z} from "zod";
 
 export type CreateRecipeBody = z.infer<typeof createRecipeBodySchema>;
+export type UpdateRecipeBody = z.infer<typeof updateRecipeBodySchema>;
 
 export async function getDashboardData() {
     const popularRecipes = await RecipeModel.getPopularRecipes();
@@ -40,6 +41,14 @@ export const createRecipe = (data: CreateRecipeBody) => {
 export const fetchAllRecipes = () => RecipeModel.getAllRecipes();
 
 export const removeRecipe = (id: number) => RecipeModel.deleteRecipe(id);
+
+export async function updateRecipe(id: number, data: UpdateRecipeBody) {
+    const updated = await RecipeModel.updateRecipe(id, data);
+    if (!updated) {
+        throw new NotFoundError("RECIPE_NOT_FOUND", "Recipe not found");
+    }
+    return getRecipe(id);
+}
 
 export const fetchIngredients = () => RecipeModel.getAllIngredients();
 
