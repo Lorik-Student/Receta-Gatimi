@@ -11,6 +11,13 @@ import { CategoriesPage, categoriesLoader } from "./pages/CategoriesPage";
 import { ProfilePage, profileLoader } from "./pages/ProfilePage.jsx";
 import { AboutUsPage } from "./pages/AboutUsPage";
 
+import { AdminLayout, AdminDashboardOverview } from "./pages/admin/AdminDashboard";
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdminRecipesPage } from "./pages/admin/AdminRecipesPage";
+import { AdminCategoriesPage } from "./pages/admin/AdminCategoriesPage";
+import { AdminInteractionsPage } from "./pages/admin/AdminInteractionsPage";
+
+
 function RootLayout() {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -74,7 +81,18 @@ export const router = createBrowserRouter([
                 path: "/profile",
                 element: <ProfilePage />,
                 loader: profileLoader
-            }
+            },
+        ]
+    },
+    {
+        path: "/admin",
+        element: <AdminLayout />,
+        children: [
+            { index: true, element: <AdminDashboardOverview /> },
+            { path: "users", element: <AdminUsersPage /> },
+            { path: "recipes", element: <AdminRecipesPage /> },
+            { path: "categories", element: <AdminCategoriesPage /> },
+            { path: "interactions", element: <AdminInteractionsPage /> }
         ]
     }
 ])

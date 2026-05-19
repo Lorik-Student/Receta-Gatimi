@@ -50,7 +50,7 @@ const userOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: N
 
 const chefOnlyMiddleware: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
     const claims = (req as RequestWithClaims).claims;
-    if (!claims || !claims.roles || !claims.roles.includes("chef")) {
+    if (!claims || !claims.roles || (!claims.roles.includes("chef") && !claims.roles.includes("admin"))) {
         throw new ForbiddenError("CHEF_ACCESS_REQUIRED", "Qasja lejohet vetëm për kuzhinierët.");
     }
     next();
