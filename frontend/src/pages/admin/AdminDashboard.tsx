@@ -26,6 +26,7 @@ export function AdminLayout() {
     { label: "Users", path: "/admin/users", icon: "group" },
     { label: "Recipes", path: "/admin/recipes", icon: "restaurant" },
     { label: "Categories", path: "/admin/categories", icon: "category" },
+    { label: "Reports", path: "/admin/reports", icon: "flag" },
     { label: "Interactions", path: "/admin/interactions", icon: "forum" },
   ];
 
@@ -108,7 +109,7 @@ export function AdminDashboardOverview() {
       try {
         const [usersRes, recipesRes, categoriesRes, reviewsRes] = await Promise.all([
           apiFetch("/users"),
-          apiFetch("/recipes"),
+          apiFetch("/recipes/admin"),
           apiFetch("/categories"),
           apiFetch("/interactions/reviews/recipe/1")
         ]);
@@ -139,6 +140,7 @@ export function AdminDashboardOverview() {
             { label: "Users", to: "/admin/users", icon: "group" },
             { label: "Recipes", to: "/admin/recipes", icon: "restaurant" },
             { label: "Categories", to: "/admin/categories", icon: "category" },
+            { label: "Reports", to: "/admin/reports", icon: "flag" },
             { label: "Interactions", to: "/admin/interactions", icon: "forum" },
           ].map((action) => (
             <Link key={action.to} to={action.to} className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)" }}>

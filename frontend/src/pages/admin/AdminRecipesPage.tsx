@@ -12,6 +12,9 @@ interface RecipeRecord {
   imazhi?: string;
   user_id: number;
   category_id: number;
+  is_hidden?: boolean;
+  hidden_at?: string | null;
+  hidden_reason?: string | null;
 }
 
 type ModalMode = "create" | "edit" | "view";
@@ -77,7 +80,7 @@ export function AdminRecipesPage() {
   async function loadRecipes() {
     setLoading(true);
     try {
-      const response = await apiFetch("/recipes");
+      const response = await apiFetch("/recipes/admin");
       setRecipes(readCollection<RecipeRecord>(response, ["recipes", "data"]));
     } catch (error) {
       console.error("Failed to fetch recipes:", error);
@@ -215,8 +218,20 @@ export function AdminRecipesPage() {
                 filteredRecipes.map((recipe) => (
                   <tr key={recipe.id} className="transition-colors hover:bg-black/5">
                     <td className="px-6 py-4">
-                      <p className="text-sm font-semibold" style={{ color: "var(--color-on-surface)" }}>{recipe.titulli}</p>
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold" style={{ color: "var(--color-on-surface)" }}>{recipe.titulli}</p>
+                          {recipe.is_hidden && (
+                            <span className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--color-error-container)", color: "var(--color-on-error-container)" }}>
+                              Hidden
+                            </span>
+                          )}
+                        </div>
+                        {recipe.hidden_reason && (
+                          <p className="text-xs italic" style={{ color: "var(--color-on-surface-variant)" }}>{recipe.hidden_reason}</p>
+                        )}
                       <p className="mt-1 text-xs" style={{ color: "var(--color-on-surface-variant)" }}>{recipe.pershkrimi}</p>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>{recipe.koha_pergatitjes}m prep / {recipe.koha_gatimit}m cook</td>
                     <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>User {recipe.user_id} / Cat {recipe.category_id}</td>
