@@ -3,6 +3,7 @@ import type { UserInsert, UserProfile, User, UserUpdate } from "../../common/typ
 import bcrypt from "bcrypt";
 import { ConflictError, NotFoundError } from "../../common/http-errors.js";
 import { UserRole } from "../../common/types/index.js";
+import * as RecipeModel from "../recipe/recipe.model.js";
 
 type CreateUserInput = Omit<UserInsert, "roles"> & {
     roles?: UserRole[];
@@ -88,10 +89,11 @@ export async function getAllUserProfiles(): Promise<UserProfile[]> {
     return await Model.findAllUserProfiles();
 }
 
-export async function getUserProfile(id: number): Promise<UserProfile | null> { 
+export async function getUserProfile(id: number, includeHiddenRecipes = false): Promise<UserProfile | null> { 
     const foundUser = await Model.findUserProfile(id);
     if (!foundUser) throw new NotFoundError("USER_NOT_FOUND", "User not found");
-    return foundUser;
+    const recipes = await RecipeModel.getRecipesByUserId(id, includeHiddenRecipes);
+    return { ...foundUser, recipes };
 
 }
 

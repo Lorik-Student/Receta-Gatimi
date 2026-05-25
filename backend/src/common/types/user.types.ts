@@ -1,3 +1,5 @@
+import type { Recipe } from "./recipe.types.js";
+
 export enum UserRole {
     guest = "guest",
     user = "user",
@@ -27,6 +29,7 @@ export interface UserProfile {
     email: string;
     roles: UserRole[];
     phone_number?: string | null;
+    recipes?: Recipe[];
 }
 
 export interface UserInsert {

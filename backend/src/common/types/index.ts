@@ -8,4 +8,6 @@ export type LoginData = ZodInfer<typeof loginBodySchema>;
 export * from "./user.types.js";
 export * from "./category.types.js";
 export * from "./recipe.types.js";
+export * from "./report.types.js";
 export * from "./shopping.types.js";
+export * from "./notification.types.js";

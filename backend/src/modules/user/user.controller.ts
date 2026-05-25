@@ -34,15 +34,16 @@ export async function deleteUser(req: Request, res: Response) {
 }
 
 export async function getUserProfile(req: Request, res: Response) { 
-    const sub = (req as RequestWithClaims).claims?.sub;
-    let userId: number; 
-    if (sub)  
-        userId = Number(sub);
-    else if (req.params.id)
-        userId = Number(req.params.id);
-    else throw new Error("Missing ID resolution middleware");
+    const claims = (req as RequestWithClaims).claims;
+    const viewerUserId = Number(claims?.sub || claims?.id || 0);
+    const routeUserId = req.params.id ? Number(req.params.id) : viewerUserId;
 
-    const user = await Service.getUserProfile(userId);
+    if (!Number.isInteger(routeUserId) || routeUserId <= 0) {
+        throw new Error("Missing ID resolution middleware");
+    }
+
+    const includeHiddenRecipes = Number.isInteger(viewerUserId) && viewerUserId > 0 && viewerUserId === routeUserId;
+    const user = await Service.getUserProfile(routeUserId, includeHiddenRecipes);
     res.status(200).json({ success: true, user });
 }
 
