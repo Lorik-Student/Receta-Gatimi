@@ -2,6 +2,7 @@ import express from "express"
 import type { Application } from "express"
 import 'dotenv/config'
 import cors from "cors"
+import path from "path"
 
 import routes from "./routes.js";
 import { errorHandler } from "./common/middleware/error-handler.middleware.js";
@@ -16,12 +17,14 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json())
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 app.use("/api", routes);
 app.use(errorHandler);
 
 
 app.listen(PORT, () => {
   console.log(`Server running at http://${HOSTNAME}:${PORT}/`);
+  console.log(`Node.js ${process.version}`);
 });
 
 export default app;

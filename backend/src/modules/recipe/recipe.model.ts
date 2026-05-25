@@ -1,5 +1,29 @@
 import db from "../../config/db.js";
 import type { ResultSetHeader, RowDataPacket } from "mysql2";
+let recipeVisibilityColumnsPromise: Promise<boolean> | null = null;
+
+async function hasRecipeVisibilityColumns(): Promise<boolean> {
+    if (!recipeVisibilityColumnsPromise) {
+        recipeVisibilityColumnsPromise = db
+            .query<RowDataPacket[]>(
+                `SELECT COLUMN_NAME
+                 FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE()
+                   AND TABLE_NAME = 'Recipes'
+                   AND COLUMN_NAME IN ('is_hidden', 'hidden_at', 'hidden_reason')`
+            )
+            .then(([rows]) => rows.length >= 3)
+            .catch(() => false);
+    }
+
+    return recipeVisibilityColumnsPromise;
+}
+
+const RECIPE_SELECT_WITH_AUTHOR = `
+    SELECT r.*, u.id AS author_id, u.emri AS author_emri, u.mbiemri AS author_mbiemri
+    FROM Recipes r
+    LEFT JOIN users u ON u.id = r.user_id
+`;
 //create recipe
 export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: string[]) {
     const conn = await db.getConnection();
@@ -22,7 +46,7 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
                 let ingredientId;
                 const [existing] = await conn.query<RowDataPacket[]>("SELECT id FROM Ingredients WHERE emertimi = ?", [i.emertimi]);
                 if (existing.length > 0) {
-                    ingredientId = existing[0].id;
+                    ingredientId = existing[0]!.id;
                 } else {
                     const [newIng] = await conn.query<ResultSetHeader>("INSERT INTO Ingredients (emertimi) VALUES (?)", [i.emertimi]);
                     ingredientId = newIng.insertId;
@@ -39,7 +63,7 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
                 let tagId;
                 const [existing] = await conn.query<RowDataPacket[]>("SELECT id FROM Tags WHERE emertimi = ?", [tagName]);
                 if (existing.length > 0) {
-                    tagId = existing[0].id;
+                    tagId = existing[0]!.id;
                 } else {
                     const [newTag] = await conn.query<ResultSetHeader>("INSERT INTO Tags (emertimi) VALUES (?)", [tagName]);
                     tagId = newTag.insertId;
@@ -63,12 +87,42 @@ export async function insertFullRecipe(recipeData: any, steps: any[], ingredient
 
 //read
 export async function getAllRecipes() {
-    const [rows] = await db.query("SELECT * FROM Recipes ORDER BY id DESC");
+    const supportsVisibility = await hasRecipeVisibilityColumns();
+    const [rows] = supportsVisibility
+        ? await db.query(`${RECIPE_SELECT_WITH_AUTHOR} WHERE COALESCE(r.is_hidden, FALSE) = FALSE ORDER BY r.id DESC`)
+        : await db.query(`${RECIPE_SELECT_WITH_AUTHOR} ORDER BY r.id DESC`);
+    return rows as RowDataPacket[];
+}
+
+export async function getRecipesByUserId(userId: number, includeHidden = false) {
+    const supportsVisibility = await hasRecipeVisibilityColumns();
+    const [rows] = supportsVisibility && !includeHidden
+        ? await db.query<RowDataPacket[]>(
+            `${RECIPE_SELECT_WITH_AUTHOR} WHERE r.user_id = ? AND COALESCE(r.is_hidden, FALSE) = FALSE ORDER BY r.id DESC`,
+            [userId]
+        )
+        : await db.query<RowDataPacket[]>(
+            `${RECIPE_SELECT_WITH_AUTHOR} WHERE r.user_id = ? ORDER BY r.id DESC`,
+            [userId]
+        );
+    return rows;
+}
+
+export async function getAllRecipesForAdmin() {
+    const [rows] = await db.query(`${RECIPE_SELECT_WITH_AUTHOR} ORDER BY r.id DESC`);
     return rows as RowDataPacket[];
 }
 
 export async function getRecipeById(id: number) {
-    const [rows] = await db.query<RowDataPacket[]>("SELECT * FROM Recipes WHERE id = ?", [id]);
+    const supportsVisibility = await hasRecipeVisibilityColumns();
+    const [rows] = supportsVisibility
+        ? await db.query<RowDataPacket[]>(`${RECIPE_SELECT_WITH_AUTHOR} WHERE r.id = ? AND COALESCE(r.is_hidden, FALSE) = FALSE LIMIT 1`, [id])
+        : await db.query<RowDataPacket[]>(`${RECIPE_SELECT_WITH_AUTHOR} WHERE r.id = ? LIMIT 1`, [id]);
+    return rows[0] || null;
+}
+
+export async function getRecipeByIdForAdmin(id: number) {
+    const [rows] = await db.query<RowDataPacket[]>(`${RECIPE_SELECT_WITH_AUTHOR} WHERE r.id = ? LIMIT 1`, [id]);
     return rows[0] || null;
 }
 
@@ -162,11 +216,36 @@ export async function deleteIngredient(ingredient_id: number) {
 
 
 export async function getPopularRecipes() {
-    const [rows] = await db.query(`
-        SELECT r.id, r.titulli, COUNT(f.id) as fav_count 
-        FROM Recipes r 
-        LEFT JOIN Favorites f ON r.id = f.recipe_id 
-        GROUP BY r.id ORDER BY fav_count DESC LIMIT ?`, [5]);
+    const supportsVisibility = await hasRecipeVisibilityColumns();
+    const [rows] = supportsVisibility
+        ? await db.query(`
+            SELECT r.id, r.titulli, COUNT(f.id) as fav_count 
+            FROM Recipes r 
+            LEFT JOIN Favorites f ON r.id = f.recipe_id 
+            WHERE COALESCE(r.is_hidden, FALSE) = FALSE
+            GROUP BY r.id ORDER BY fav_count DESC LIMIT ?`, [5])
+        : await db.query(`
+            SELECT r.id, r.titulli, COUNT(f.id) as fav_count 
+            FROM Recipes r 
+            LEFT JOIN Favorites f ON r.id = f.recipe_id 
+            GROUP BY r.id ORDER BY fav_count DESC LIMIT ?`, [5]);
 
     return rows;
+}
+
+export async function restoreRecipeVisibility(id: number): Promise<boolean> {
+    if (!(await hasRecipeVisibilityColumns())) {
+        return false;
+    }
+
+    const [result] = await db.query<ResultSetHeader>(
+        `UPDATE Recipes
+         SET is_hidden = FALSE,
+             hidden_at = NULL,
+             hidden_reason = NULL
+         WHERE id = ?`,
+        [id]
+    );
+
+    return result.affectedRows > 0;
 }

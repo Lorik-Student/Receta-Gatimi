@@ -40,7 +40,13 @@ export const createRecipe = (data: CreateRecipeBody) => {
 
 export const fetchAllRecipes = () => RecipeModel.getAllRecipes();
 
+export const fetchRecipesByUserId = (userId: number) => RecipeModel.getRecipesByUserId(userId);
+
+export const fetchAllRecipesForAdmin = () => RecipeModel.getAllRecipesForAdmin();
+
 export const removeRecipe = (id: number) => RecipeModel.deleteRecipe(id);
+
+export const restoreRecipeVisibility = (id: number) => RecipeModel.restoreRecipeVisibility(id);
 
 export async function updateRecipe(id: number, data: UpdateRecipeBody) {
     const updated = await RecipeModel.updateRecipe(id, data);

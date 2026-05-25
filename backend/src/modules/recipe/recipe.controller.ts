@@ -30,6 +30,23 @@ export async function getRecipes(req: Request, res: Response) {
     res.json(recipes);
 }
 
+export async function getMyRecipes(req: Request, res: Response) {
+    const claims = (req as RequestWithClaims).claims;
+    const userId = Number(claims?.sub || claims?.id);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+        throw new BadRequestError("INVALID_USER", "Nuk mund të përcaktohet përdoruesi aktual");
+    }
+
+    const recipes = await RecipeService.fetchRecipesByUserId(userId);
+    res.json(recipes);
+}
+
+export async function getAdminRecipes(req: Request, res: Response) {
+    const recipes = await RecipeService.fetchAllRecipesForAdmin();
+    res.json(recipes);
+}
+
 export async function getTags(req: Request, res: Response) {
     const tags = await RecipeService.fetchTags();
     res.json(tags);

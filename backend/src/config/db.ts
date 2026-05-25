@@ -16,9 +16,14 @@ async function testConnection() {
     conn.release();
   } catch (error) {
     console.error('Failed to connect to the database:', error);
-    throw error;
+    // Do not throw here to avoid crashing the entire process at module import time.
+    // The application will continue to start; DB operations will surface errors when used.
   }
 }
 
-await testConnection();
+// Attempt a non-fatal connection test on startup. Failures are logged but do not stop the server.
+testConnection().catch(() => {
+  // Already logged inside testConnection; swallow the rejection to avoid unhandled rejection.
+});
+
 export default pool;

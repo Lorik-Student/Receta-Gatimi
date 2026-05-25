@@ -5,6 +5,7 @@ import recipeRoutes from "./modules/recipe/recipe.routes.js";
 import categoryRoutes from "./modules/category/category.routes.js";
 import shoppingRoutes from "./modules/shopping/shopping.routes.js";
 import interactionRoutes from "./modules/interaction/interaction.routes.js";
+import notificationRoutes from "./modules/notification/notification.routes.js";
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.use("/recipes", recipeRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/shopping-lists", shoppingRoutes);
 router.use("/interactions", interactionRoutes);
+router.use("/notifications", notificationRoutes);
 
 // Temporary alias to avoid breaking existing clients.
 router.use("/shopping", shoppingRoutes);

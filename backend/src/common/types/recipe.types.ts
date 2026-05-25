@@ -9,6 +9,12 @@ export interface Recipe {
     imazhi?: string;
     user_id: number;
     category_id: number;
+    author_id?: number;
+    author_emri?: string;
+    author_mbiemri?: string;
+    is_hidden?: boolean;
+    hidden_at?: Date | null;
+    hidden_reason?: string | null;
 }
 
 export interface RecipeIngredient {
@@ -37,4 +43,26 @@ export interface Favorite {
     user_id: number;
     recipe_id: number;
     data: Date;
+}
+
+export interface FavoriteRecipeItem {
+    favorite_id: number;
+    recipe_id: number;
+    titulli: string;
+    imazhi?: string;
+    data: Date;
+}
+
+export interface FavoriteCategory {
+    id: number;
+    user_id: number;
+    emertimi: string;
+    is_public: boolean;
+    pershkrimi?: string | null;
+    imazhi?: string | null;
+    data_krijimit: Date;
+}
+
+export interface FavoriteCategoryWithRecipes extends FavoriteCategory {
+    recipes: FavoriteRecipeItem[];
 }

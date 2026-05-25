@@ -41,7 +41,13 @@ export function validate(schema: RequestSchema): RequestHandler {
                 req.params = await parsePart("params", schema.params, req.params) as any;
             }
             if (schema.query) {
-                req.query = await parsePart("query", schema.query, req.query) as any;
+                const parsedQuery = await parsePart("query", schema.query, req.query);
+                Object.defineProperty(req, "query", {
+                    value: parsedQuery,
+                    writable: true,
+                    configurable: true,
+                    enumerable: true
+                });
             }
             next();
         } catch (error) {
