@@ -54,6 +54,7 @@ export function CategoriesPage() {
   }, [recipes, activeCategoryId]);
 
   const recipeCards: RecipeCardData[] = filteredRecipes.map((r: any) => ({
+    id: String(r.id || r.recipe_id || ""),
     title: r.titulli || "Recetë pa titull",
     description: r.pershkrimi || "Pa përshkrim",
     image: r.imazhi || CATEGORY_FALLBACK_IMAGE,
@@ -61,6 +62,8 @@ export function CategoriesPage() {
     time: `${r.koha_pergatitjes || 0} Min`,
     difficulty: "Mesatare",
     rating: "4.5",
+    authorId: Number(r.author_id || r.user_id || 0) || undefined,
+    authorName: [r.author_emri, r.author_mbiemri].filter(Boolean).join(" ") || undefined,
   }));
 
   return (

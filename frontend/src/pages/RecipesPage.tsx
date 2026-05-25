@@ -70,6 +70,8 @@ export function RecipesPage() {
     time: `${r.koha_pergatitjes || 0} Min`,
     difficulty: "Mesatare",
     rating: "4.8",
+    authorId: Number(r.author_id || r.user_id || 0) || undefined,
+    authorName: [r.author_emri, r.author_mbiemri].filter(Boolean).join(" ") || undefined,
   }));
 
   return (

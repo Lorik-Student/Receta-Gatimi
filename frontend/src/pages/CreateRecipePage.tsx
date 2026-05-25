@@ -117,6 +117,12 @@ export function CreateRecipePage() {
             return;
         }
 
+        const resolvedCategoryId = categoryId || String(categories[0]?.id ?? "");
+        if (!resolvedCategoryId) {
+            alert("Zgjidh një kategori për recetën.");
+            return;
+        }
+
         const payload = {
             titulli: title,
             pershkrimi: description,
@@ -125,7 +131,7 @@ export function CreateRecipePage() {
             porcione: Number(portions),
             veshtiresija: difficulty,
             imazhi: imageUrl || "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80",
-            category_id: categoryId ? Number(categoryId) : null,
+            category_id: Number(resolvedCategoryId),
             ingredients: ingredients.map(i => ({
                 emertimi: i.emertimi,
                 sasia: Number(i.sasia) || 1,
@@ -145,7 +151,7 @@ export function CreateRecipePage() {
         });
 
         if (res.ok) {
-            navigate("/recipes");
+            navigate("/recipes/me");
         } else {
             alert("Dështoi krijimi i recetës: " + (res as any).error?.message);
         }

@@ -5,10 +5,15 @@ import { SignupAction, SignupPage } from "./pages/SignupPage.jsx";
 import { ErrorPage } from "./pages/ErrorPage";
 import { HomePage } from "./pages/HomePage";
 import { RecipesPage, recipesLoader } from "./pages/RecipesPage";
+import { MyRecipesPage, myRecipesLoader } from "./pages/MyRecipesPage";
 import { RecipePage, recipeLoader } from "./pages/RecipePage";
 import { CreateRecipePage, createRecipeLoader } from "./pages/CreateRecipePage.jsx";
 import { CategoriesPage, categoriesLoader } from "./pages/CategoriesPage";
 import { ProfilePage, profileLoader } from "./pages/ProfilePage.jsx";
+import { FavoritesPage, favoritesLoader } from "./pages/FavoritesPage.jsx";
+import { FavoriteCategoryPage, favoriteCategoryLoader } from "./pages/FavoriteCategoryPage";
+import { UserRecipesPage, userRecipesLoader } from "./pages/UserRecipesPage";
+import { UserFavoritesPage, userFavoritesLoader } from "./pages/UserFavoritesPage";
 import { AboutUsPage } from "./pages/AboutUsPage";
 
 import { AdminLayout, AdminDashboardOverview } from "./pages/admin/AdminDashboard";
@@ -16,6 +21,7 @@ import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { AdminRecipesPage } from "./pages/admin/AdminRecipesPage";
 import { AdminCategoriesPage } from "./pages/admin/AdminCategoriesPage";
 import { AdminInteractionsPage } from "./pages/admin/AdminInteractionsPage";
+import { AdminReportsPage } from "./pages/admin/AdminReportsPage";
 
 
 function RootLayout() {
@@ -59,6 +65,11 @@ export const router = createBrowserRouter([
                 loader: recipesLoader
             },
             {
+                path: "/recipes/me",
+                element: <MyRecipesPage />,
+                loader: myRecipesLoader
+            },
+            {
                 path: "/recipes/:id",
                 element: <RecipePage />,
                 loader: recipeLoader
@@ -78,9 +89,34 @@ export const router = createBrowserRouter([
                 element: <AboutUsPage />
             },
             {
+                path: "/users/:id/profile",
+                element: <ProfilePage />,
+                loader: profileLoader
+            },
+            {
+                path: "/users/:id/recipes",
+                element: <UserRecipesPage />,
+                loader: userRecipesLoader
+            },
+            {
+                path: "/users/:id/favorites",
+                element: <UserFavoritesPage />,
+                loader: userFavoritesLoader
+            },
+            {
                 path: "/profile",
                 element: <ProfilePage />,
                 loader: profileLoader
+            },
+            {
+                path: "/profile/favorites",
+                element: <FavoritesPage />,
+                loader: favoritesLoader
+            },
+            {
+                path: "/profile/favorites/:id",
+                element: <FavoriteCategoryPage />,
+                loader: favoriteCategoryLoader
             },
         ]
     },
@@ -92,6 +128,7 @@ export const router = createBrowserRouter([
             { path: "users", element: <AdminUsersPage /> },
             { path: "recipes", element: <AdminRecipesPage /> },
             { path: "categories", element: <AdminCategoriesPage /> },
+            { path: "reports", element: <AdminReportsPage /> },
             { path: "interactions", element: <AdminInteractionsPage /> }
         ]
     }
