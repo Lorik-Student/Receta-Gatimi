@@ -1,5 +1,5 @@
 CREATE TABLE FavoriteCategories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
     emertimi VARCHAR(80) NOT NULL,
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
@@ -8,9 +8,9 @@ CREATE TABLE FavoriteCategories (
 );
 
 CREATE TABLE FavoriteCategoryItems (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    category_id INT NOT NULL,
-    favorite_id INT NOT NULL,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    category_id INT UNSIGNED NOT NULL,
+    favorite_id INT UNSIGNED NOT NULL,
     data_krijimit TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES FavoriteCategories(id) ON DELETE CASCADE,
     FOREIGN KEY (favorite_id) REFERENCES Favorites(id) ON DELETE CASCADE,

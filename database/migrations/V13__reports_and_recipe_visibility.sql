@@ -4,8 +4,8 @@ ALTER TABLE Recipes
     ADD COLUMN hidden_reason VARCHAR(255) NULL;
 
 CREATE TABLE RecipeReports (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    recipe_id INT NOT NULL,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    recipe_id INT UNSIGNED NOT NULL,
     reporter_user_id INT UNSIGNED NOT NULL,
     reason VARCHAR(500) NOT NULL,
     status ENUM('pending', 'dismissed') NOT NULL DEFAULT 'pending',
@@ -20,7 +20,7 @@ CREATE TABLE RecipeReports (
 );
 
 CREATE TABLE UserReports (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     reported_user_id INT UNSIGNED NOT NULL,
     reporter_user_id INT UNSIGNED NOT NULL,
     reason VARCHAR(500) NOT NULL,

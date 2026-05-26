@@ -1,8 +1,8 @@
 CREATE TABLE Notifications (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
     actor_user_id INT UNSIGNED NULL,
-    recipe_id INT NOT NULL,
+    recipe_id INT UNSIGNED NOT NULL,
     notification_type VARCHAR(20) NOT NULL,
     title VARCHAR(120) NOT NULL,
     message VARCHAR(255) NOT NULL,
