@@ -35,7 +35,7 @@ export function AdminLayout() {
   )?.label ?? "Dashboard";
 
   return (
-    <div className="min-h-screen flex font-[family-name:var(--font-body-md)]" style={{ backgroundColor: "var(--color-background)", color: "var(--color-on-background)" }}>
+    <div className="min-h-screen flex font-(family-name:--font-body-md)" style={{ backgroundColor: "var(--color-background)", color: "var(--color-on-background)" }}>
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col p-4 shadow-lg transition-transform duration-300 md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         style={{ backgroundColor: "var(--color-surface-container-high)", color: "var(--color-on-surface)", borderRight: "1px solid var(--color-outline-variant)" }}
@@ -52,7 +52,7 @@ export function AdminLayout() {
           </div>
         </div>
 
-        <nav className="flex-grow space-y-2">
+        <nav className="grow space-y-2">
           {navItems.map((item) => {
             const isActive = item.path === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.path);
             return (
@@ -75,7 +75,7 @@ export function AdminLayout() {
         </div>
       </aside>
 
-      <div className="flex min-h-screen flex-grow flex-col md:pl-72">
+      <div className="flex min-h-screen grow flex-col md:pl-72">
         <header className="fixed top-0 right-0 left-0 z-40 flex h-16 items-center justify-between px-6 shadow-sm md:left-72" style={{ backgroundColor: "var(--color-surface)", borderBottom: "1px solid var(--color-outline-variant)" }}>
           <div className="flex items-center gap-4">
             <button className="flex items-center rounded-full p-2 transition-colors hover:bg-black/5 md:hidden" style={{ color: "var(--color-on-surface)" }} onClick={() => setSidebarOpen((value) => !value)}>
@@ -91,7 +91,7 @@ export function AdminLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[1440px] flex-grow p-6 pt-20 md:p-10 md:pt-24">
+        <main className="mx-auto w-full max-w-360 grow p-6 pt-20 md:p-10 md:pt-24">
           <Outlet />
         </main>
       </div>

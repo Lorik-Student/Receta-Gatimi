@@ -33,6 +33,12 @@ const navItems: HeaderNavItem[] = [
   { label: 'Rreth nesh', to: '/about' },
 ];
 
+type ProfileResponse = {
+  user?: {
+    roles?: string[];
+  };
+};
+
 export const Header: React.FC<HeaderProps> = ({
   brand,
   activePath = '/',
@@ -46,6 +52,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [unreadCount, setUnreadCount] = useState(0);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState('');
+  const [userRoles, setUserRoles] = useState<string[]>([]);
 
   async function loadNotifications() {
     setNotificationsLoading(true);
@@ -96,11 +103,46 @@ export const Header: React.FC<HeaderProps> = ({
       setNotifications([]);
       setUnreadCount(0);
       setNotificationsOpen(false);
+      setUserRoles([]);
       return;
     }
 
     void loadNotifications();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function loadUserRoles() {
+      try {
+        const response = (await apiFetch('/users/me/profile')) as ProfileResponse;
+        const roles = Array.isArray(response?.user?.roles) ? response.user.roles : [];
+
+        if (isMounted) {
+          setUserRoles(roles);
+        }
+      } catch (error) {
+        console.error('Failed to load current user roles:', error);
+        if (isMounted) {
+          setUserRoles([]);
+        }
+      }
+    }
+
+    void loadUserRoles();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated]);
+
+  const visibleNavItems = userRoles.some((role) => role.toLowerCase().includes('admin'))
+    ? [...navItems, { label: 'Admin dashboard', to: '/admin' }]
+    : navItems;
 
   useEffect(() => {
     if (!notificationsOpen) {
@@ -137,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
           </Link>
 
           <nav className="hidden md:flex items-center gap-8" aria-label="Navigimi kryesor">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = item.to === activePath;
 
               return (
@@ -198,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   </div>
 
-                  <div className="max-h-[26rem] overflow-y-auto">
+                  <div className="max-h-104 overflow-y-auto">
                     {notificationsLoading ? (
                       <div className="px-5 py-8 text-center text-sm text-on-surface-variant">Duke ngarkuar njoftimet...</div>
                     ) : notificationsError ? (

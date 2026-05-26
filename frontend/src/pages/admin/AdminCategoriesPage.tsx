@@ -8,7 +8,13 @@ interface CategoryRecord {
   imazhi?: string;
 }
 
-type ModalMode = "create" | "edit";
+type ModalMode = "create" | "edit" | "view";
+
+interface CategoryDraft {
+  emertimi: string;
+  pershkrimi: string;
+  imazhi: string;
+}
 
 function readCollection<T>(payload: unknown, keys: string[]): T[] {
   if (Array.isArray(payload)) return payload as T[];
@@ -19,12 +25,16 @@ function readCollection<T>(payload: unknown, keys: string[]): T[] {
   return [];
 }
 
-function makeCreateTemplate() {
-  return JSON.stringify({ emertimi: "", pershkrimi: "", imazhi: "" }, null, 2);
+function emptyCategoryDraft(): CategoryDraft {
+  return { emertimi: "", pershkrimi: "", imazhi: "" };
 }
 
-function makeEditTemplate(category: CategoryRecord) {
-  return JSON.stringify({ emertimi: category.emertimi, pershkrimi: category.pershkrimi ?? "", imazhi: category.imazhi ?? "" }, null, 2);
+function toCategoryDraft(category: CategoryRecord): CategoryDraft {
+  return {
+    emertimi: category.emertimi ?? "",
+    pershkrimi: category.pershkrimi ?? "",
+    imazhi: category.imazhi ?? "",
+  };
 }
 
 export function AdminCategoriesPage() {
@@ -34,7 +44,7 @@ export function AdminCategoriesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("create");
   const [selectedCategory, setSelectedCategory] = useState<CategoryRecord | null>(null);
-  const [draft, setDraft] = useState(makeCreateTemplate());
+  const [draft, setDraft] = useState<CategoryDraft>(emptyCategoryDraft());
   const [draftError, setDraftError] = useState("");
 
   async function loadCategories() {
@@ -62,7 +72,7 @@ export function AdminCategoriesPage() {
   function openCreate() {
     setModalMode("create");
     setSelectedCategory(null);
-    setDraft(makeCreateTemplate());
+    setDraft(emptyCategoryDraft());
     setDraftError("");
     setModalOpen(true);
   }
@@ -70,17 +80,35 @@ export function AdminCategoriesPage() {
   function openEdit(category: CategoryRecord) {
     setModalMode("edit");
     setSelectedCategory(category);
-    setDraft(makeEditTemplate(category));
+    setDraft(toCategoryDraft(category));
+    setDraftError("");
+    setModalOpen(true);
+  }
+
+  function openView(category: CategoryRecord) {
+    setModalMode("view");
+    setSelectedCategory(category);
+    setDraft(toCategoryDraft(category));
     setDraftError("");
     setModalOpen(true);
   }
 
   async function saveCategory() {
+    const payload = {
+      emertimi: draft.emertimi.trim(),
+      pershkrimi: draft.pershkrimi.trim() || undefined,
+      imazhi: draft.imazhi.trim() || undefined,
+    };
+
+    if (!payload.emertimi) {
+      setDraftError("Emërtimi është i detyrueshëm.");
+      return;
+    }
+
     try {
-      const parsed = JSON.parse(draft) as Record<string, unknown>;
       const response = selectedCategory
-        ? await apiFetch(`/categories/${selectedCategory.id}`, { method: "PATCH", body: JSON.stringify(parsed) })
-        : await apiFetch("/categories", { method: "POST", body: JSON.stringify(parsed) });
+        ? await apiFetch(`/categories/${selectedCategory.id}`, { method: "PATCH", body: JSON.stringify(payload) })
+        : await apiFetch("/categories", { method: "POST", body: JSON.stringify(payload) });
 
       if (!response.ok) {
         throw new Error("Failed to save category");
@@ -90,7 +118,7 @@ export function AdminCategoriesPage() {
       await loadCategories();
     } catch (error) {
       console.error("Failed to save category:", error);
-      setDraftError(error instanceof SyntaxError ? "Draft must be valid JSON." : "Unable to save category.");
+      setDraftError("Unable to save category.");
     }
   }
 
@@ -109,7 +137,7 @@ export function AdminCategoriesPage() {
       <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-3xl font-bold" style={{ fontFamily: "var(--font-headline-md)", color: "var(--color-on-surface)" }}>Category Management</h2>
-          <p className="mt-2 text-base" style={{ color: "var(--color-on-surface-variant)" }}>Create, edit, and delete the taxonomy used across recipes.</p>
+          <p className="mt-2 text-base" style={{ color: "var(--color-on-surface-variant)" }}>Manage categories through a table-first workflow instead of editing JSON blobs.</p>
         </div>
         <button type="button" className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold shadow-sm transition-opacity hover:opacity-90" style={{ backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)" }} onClick={openCreate}>
           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>add</span>
@@ -161,6 +189,7 @@ export function AdminCategoriesPage() {
                     <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>{category.pershkrimi ?? "-"}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-3">
+                        <button type="button" className="font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--color-primary)" }} onClick={() => openView(category)}>View</button>
                         <button type="button" className="font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--color-primary)" }} onClick={() => openEdit(category)}>Edit</button>
                         <button type="button" className="font-semibold transition-opacity hover:opacity-80" style={{ color: "var(--color-error)" }} onClick={() => deleteCategory(category)}>Delete</button>
                       </div>
@@ -178,24 +207,66 @@ export function AdminCategoriesPage() {
           <div className="w-full max-w-2xl rounded-2xl border p-6 shadow-2xl" style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-outline-variant)" }}>
             <div className="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold" style={{ fontFamily: "var(--font-headline-md)", color: "var(--color-on-surface)" }}>{modalMode === "edit" ? "Edit Category" : "Create Category"}</h3>
-                <p className="mt-1 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>Edit the JSON payload and save it to the API.</p>
+                <h3 className="text-2xl font-bold" style={{ fontFamily: "var(--font-headline-md)", color: "var(--color-on-surface)" }}>{modalMode === "edit" ? "Edit Category" : modalMode === "view" ? "Category Details" : "Create Category"}</h3>
+                <p className="mt-1 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>Use structured form fields to keep category management consistent with the rest of the admin panel.</p>
               </div>
               <button type="button" className="rounded-full px-3 py-2 text-sm font-semibold" style={{ color: "var(--color-primary)" }} onClick={() => setModalOpen(false)}>Close</button>
             </div>
 
-            <textarea
-              className="min-h-72 w-full rounded-2xl border p-4 font-mono text-sm outline-none"
-              style={{ backgroundColor: "var(--color-surface-container)", borderColor: "var(--color-outline-variant)", color: "var(--color-on-surface)" }}
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-            />
+            <div className="grid gap-4">
+              <label className="flex flex-col gap-2 text-sm font-medium" style={{ color: "var(--color-on-surface)" }}>
+                Name
+                <input
+                  className="rounded-xl border px-4 py-2.5 outline-none"
+                  style={{ borderColor: "var(--color-outline-variant)", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface)" }}
+                  value={draft.emertimi}
+                  disabled={modalMode === "view"}
+                  onChange={(event) => setDraft((current) => ({ ...current, emertimi: event.target.value }))}
+                />
+              </label>
+              <label className="flex flex-col gap-2 text-sm font-medium" style={{ color: "var(--color-on-surface)" }}>
+                Description
+                <textarea
+                  className="min-h-28 rounded-xl border px-4 py-2.5 outline-none"
+                  style={{ borderColor: "var(--color-outline-variant)", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface)" }}
+                  value={draft.pershkrimi}
+                  disabled={modalMode === "view"}
+                  onChange={(event) => setDraft((current) => ({ ...current, pershkrimi: event.target.value }))}
+                />
+              </label>
+              <label className="flex flex-col gap-2 text-sm font-medium" style={{ color: "var(--color-on-surface)" }}>
+                Image URL
+                <input
+                  className="rounded-xl border px-4 py-2.5 outline-none"
+                  style={{ borderColor: "var(--color-outline-variant)", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface)" }}
+                  value={draft.imazhi}
+                  disabled={modalMode === "view"}
+                  onChange={(event) => setDraft((current) => ({ ...current, imazhi: event.target.value }))}
+                />
+              </label>
+            </div>
+
+            {draft.imazhi && (
+              <div className="mt-4 overflow-hidden rounded-2xl border" style={{ borderColor: "var(--color-outline-variant)" }}>
+                <img src={draft.imazhi} alt={draft.emertimi || "Category preview"} className="h-48 w-full object-cover" />
+              </div>
+            )}
+
+            {modalMode === "view" && (
+              <div className="mt-6 rounded-2xl border p-4" style={{ borderColor: "var(--color-outline-variant)", backgroundColor: "var(--color-surface-container-low)" }}>
+                <p className="text-sm font-medium" style={{ color: "var(--color-on-surface-variant)" }}>This category is displayed as a structured record instead of raw JSON.</p>
+              </div>
+            )}
 
             <p className="mt-5 text-sm font-medium" style={{ color: "var(--color-error)" }}>{draftError}</p>
 
             <div className="mt-6 flex justify-end gap-3">
               <button type="button" className="rounded-xl px-4 py-2.5 text-sm font-semibold" style={{ color: "var(--color-on-surface-variant)" }} onClick={() => setModalOpen(false)}>Cancel</button>
-              <button type="button" className="rounded-xl px-5 py-2.5 text-sm font-semibold" style={{ backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)" }} onClick={saveCategory}>{modalMode === "edit" ? "Save Changes" : "Create Category"}</button>
+              {modalMode !== "view" && (
+                <button type="button" className="rounded-xl px-5 py-2.5 text-sm font-semibold" style={{ backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)" }} onClick={saveCategory}>
+                  {modalMode === "edit" ? "Save Changes" : "Create Category"}
+                </button>
+              )}
             </div>
           </div>
         </div>
