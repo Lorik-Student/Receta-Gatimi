@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
-import { useLoaderData, Link } from "react-router-dom";
+import { useLoaderData, Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -94,6 +94,7 @@ export async function recipeLoader({ params }: any) {
 export function RecipePage() {
   const rawData = useLoaderData() as any;
   const recipe = rawData.data || rawData;
+  const navigate = useNavigate();
   const recipeId = Number(recipe?.id ?? rawData?.id ?? 0);
   const isAuthenticated = Boolean(localStorage.getItem("accessToken"));
   const authorId = Number(recipe?.author_id || recipe?.user_id || 0) || undefined;
@@ -115,11 +116,14 @@ export function RecipePage() {
   const [favoriteError, setFavoriteError] = useState("");
   const [favoriteMenuOpen, setFavoriteMenuOpen] = useState(false);
   const [categoryDraftName, setCategoryDraftName] = useState("");
+  const [shoppingMessage, setShoppingMessage] = useState("");
+  const [shoppingError, setShoppingError] = useState("");
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [reportDraft, setReportDraft] = useState<ReportDraft>({ reason: "" });
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [reportError, setReportError] = useState("");
   const [reportMessage, setReportMessage] = useState("");
+  const [selectedIngredientIds, setSelectedIngredientIds] = useState<number[]>([]);
 
   async function loadReviews() {
     if (!Number.isInteger(recipeId) || recipeId <= 0) {
@@ -142,6 +146,16 @@ export function RecipePage() {
 
   useEffect(() => {
     void loadReviews();
+  }, [recipeId]);
+
+  useEffect(() => {
+    const ingredientIds = Array.isArray(recipe?.ingredients)
+      ? recipe.ingredients
+          .map((ingredient: any) => Number(ingredient.ingredient_id || ingredient.id))
+          .filter((ingredientId: number) => Number.isInteger(ingredientId) && ingredientId > 0)
+      : [];
+
+    setSelectedIngredientIds(ingredientIds);
   }, [recipeId]);
 
   async function loadFavoriteState() {
@@ -320,7 +334,7 @@ export function RecipePage() {
     }
 
     if (!Number.isInteger(recipeId) || recipeId <= 0) {
-      setFavoriteError("Receta nuk është e vlefshme.");
+      setShoppingError("Receta nuk është e vlefshme.");
       return;
     }
 
@@ -463,6 +477,62 @@ export function RecipePage() {
     }
   }
 
+  function toggleIngredientSelection(ingredientId: number) {
+    setSelectedIngredientIds((current) => {
+      if (current.includes(ingredientId)) {
+        return current.filter((currentId) => currentId !== ingredientId);
+      }
+
+      return [...current, ingredientId];
+    });
+  }
+
+  async function sendIngredientsToShoppingList() {
+    if (!isAuthenticated) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!Number.isInteger(recipeId) || recipeId <= 0) {
+      setFavoriteError("Receta nuk është e vlefshme.");
+      return;
+    }
+
+    const ingredientIds = selectedIngredientIds.length > 0
+      ? selectedIngredientIds
+      : (Array.isArray(recipe?.ingredients)
+          ? recipe.ingredients.map((ingredient: any) => Number(ingredient.ingredient_id || ingredient.id)).filter((ingredientId: number) => Number.isInteger(ingredientId) && ingredientId > 0)
+          : []);
+
+    if (!ingredientIds.length) {
+      setShoppingError("Nuk ka përbërës për t'u dërguar në listën e blerjeve.");
+      return;
+    }
+
+    setFavoriteSubmitting(true);
+    setShoppingError("");
+    setShoppingMessage("");
+
+    try {
+      const response = await apiFetch("/shopping-lists/current/items/from-recipe", {
+        method: "POST",
+        body: JSON.stringify({ recipeId, ingredientIds })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add recipe ingredients to shopping list");
+      }
+
+      setShoppingMessage("Përbërësit u dërguan te lista e blerjeve.");
+      navigate("/profile/shopping-list");
+    } catch (error) {
+      console.error("Failed to send ingredients to shopping list:", error);
+      setShoppingError("Dërgimi i përbërësve në listën e blerjeve dështoi.");
+    } finally {
+      setFavoriteSubmitting(false);
+    }
+  }
+
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">
       <Header brand="Receta Gatimi" activePath="/recipes" />
@@ -530,6 +600,18 @@ export function RecipePage() {
               </p>
             )}
 
+            {shoppingMessage && (
+              <p className="mb-6 rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+                {shoppingMessage}
+              </p>
+            )}
+
+            {shoppingError && (
+              <p className="mb-6 rounded-xl bg-error/10 px-4 py-3 text-sm text-error">
+                {shoppingError}
+              </p>
+            )}
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-surface-variant/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
                 <span className="material-symbols-outlined text-primary mb-2">schedule</span>
@@ -553,8 +635,8 @@ export function RecipePage() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-              <div className="md:col-span-1">
+            <div className="flex flex-col gap-8 lg:gap-10">
+              <div>
                 <h2 className="font-headline-md text-on-surface flex items-center gap-2 mb-4 border-b border-outline-variant/30 pb-2">
                   <span className="material-symbols-outlined text-primary">kitchen</span>
                   Përbërësit
@@ -562,8 +644,16 @@ export function RecipePage() {
                 {recipe.ingredients && recipe.ingredients.length > 0 ? (
                   <ul className="space-y-3">
                     {recipe.ingredients.map((ing: any, i: number) => (
-                      <li key={ing.id || i} className="flex justify-between items-center bg-surface-variant/20 p-2 py-3 rounded-lg px-4 border border-outline-variant/20">
-                        <span className="font-body-md text-on-surface-variant">{ing.emertimi || `Përbërësi ${i + 1}`}</span>
+                      <li key={ing.id || ing.ingredient_id || i} className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant/20 bg-surface-variant/20 px-4 py-3">
+                        <label className="flex min-w-0 items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedIngredientIds.includes(Number(ing.ingredient_id || ing.id))}
+                            onChange={() => toggleIngredientSelection(Number(ing.ingredient_id || ing.id))}
+                            className="h-5 w-5 shrink-0 rounded-md border-outline-variant text-primary accent-primary cursor-pointer shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                          />
+                          <span className="min-w-0 font-body-md text-on-surface-variant">{ing.emertimi || `Përbërësi ${i + 1}`}</span>
+                        </label>
                         <span className="font-label-md text-on-surface font-medium bg-surface px-2 py-1 rounded shadow-sm">{ing.sasia} {ing.njesia}</span>
                       </li>
                     ))}
@@ -571,9 +661,21 @@ export function RecipePage() {
                 ) : (
                   <p className="text-on-surface-variant/70 italic text-sm">Nuk ka përbërës të listuar.</p>
                 )}
+
+                {recipe.ingredients && recipe.ingredients.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void sendIngredientsToShoppingList()}
+                    disabled={favoriteSubmitting}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-amber-600 px-5 py-3 font-label-md text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">shopping_cart</span>
+                    {favoriteSubmitting ? "Duke dërguar..." : "Dergo ne listen e blerjeve"}
+                  </button>
+                )}
               </div>
 
-              <div className="md:col-span-2">
+              <div>
                 <h2 className="font-headline-md text-on-surface flex items-center gap-2 mb-4 border-b border-outline-variant/30 pb-2">
                   <span className="material-symbols-outlined text-primary">list_alt</span>
                   Udhëzimet

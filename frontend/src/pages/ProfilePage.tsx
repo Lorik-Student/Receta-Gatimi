@@ -211,6 +211,25 @@ export function ProfilePage() {
                     <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                   </div>
                 </Link>
+
+                <Link
+                  to="/profile/shopping-list"
+                  className="group flex min-h-[180px] flex-col justify-between rounded-3xl border border-primary/20 bg-surface px-5 py-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40"
+                >
+                  <div>
+                    <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
+                      <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
+                    </div>
+                    <h3 className="font-headline-md text-on-surface mb-2">Lista e blerjeve</h3>
+                    <p className="text-sm text-on-surface-variant max-w-sm leading-relaxed">
+                      Dërgo përbërës nga recetat dhe shëno çfarë ke blerë tashmë.
+                    </p>
+                  </div>
+                  <div className="mt-6 inline-flex items-center gap-2 font-label-md text-primary">
+                    Hape listën
+                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+                  </div>
+                </Link>
               </div>
             </div>
 

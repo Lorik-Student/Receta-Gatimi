@@ -20,10 +20,69 @@ async function hasRecipeVisibilityColumns(): Promise<boolean> {
 }
 
 const RECIPE_SELECT_WITH_AUTHOR = `
-    SELECT r.*, u.id AS author_id, u.emri AS author_emri, u.mbiemri AS author_mbiemri
+    SELECT r.*, u.id AS author_id, u.emri AS author_emri, u.mbiemri AS author_mbiemri,
+           c.emertimi AS category_emertimi
     FROM Recipes r
     LEFT JOIN users u ON u.id = r.user_id
+    LEFT JOIN RecipeCategories c ON c.id = r.category_id
 `;
+
+async function attachRecipeRelations(rows: RowDataPacket[]) {
+    const recipeIds = rows
+        .map((row) => Number(row.id))
+        .filter((id) => Number.isInteger(id) && id > 0);
+
+    if (!recipeIds.length) {
+        return rows;
+    }
+
+    const [ingredientRows, tagRows] = await Promise.all([
+        db.query<RowDataPacket[]>(
+            `SELECT ri.recipe_id, i.emertimi
+             FROM RecipeIngredients ri
+             INNER JOIN Ingredients i ON i.id = ri.ingredient_id
+             WHERE ri.recipe_id IN (?)
+             ORDER BY ri.recipe_id ASC, ri.id ASC`,
+            [recipeIds]
+        ),
+        db.query<RowDataPacket[]>(
+            `SELECT rt.recipe_id, t.emertimi
+             FROM RecipeTags rt
+             INNER JOIN Tags t ON t.id = rt.tag_id
+             WHERE rt.recipe_id IN (?)
+             ORDER BY rt.recipe_id ASC, rt.id ASC`,
+            [recipeIds]
+        )
+    ]);
+
+    const ingredientsByRecipe = new Map<number, Array<{ emertimi: string }>>();
+    for (const ingredient of ingredientRows[0]) {
+        const recipeId = Number(ingredient.recipe_id);
+        const items = ingredientsByRecipe.get(recipeId) ?? [];
+        items.push({ emertimi: String(ingredient.emertimi ?? "") });
+        ingredientsByRecipe.set(recipeId, items);
+    }
+
+    const tagsByRecipe = new Map<number, Array<{ emertimi: string }>>();
+    for (const tag of tagRows[0]) {
+        const recipeId = Number(tag.recipe_id);
+        const items = tagsByRecipe.get(recipeId) ?? [];
+        items.push({ emertimi: String(tag.emertimi ?? "") });
+        tagsByRecipe.set(recipeId, items);
+    }
+
+    return rows.map((row) => {
+        const recipeId = Number(row.id);
+        const categoryName = String(row.category_emertimi ?? "").trim();
+
+        return {
+            ...row,
+            ingredients: ingredientsByRecipe.get(recipeId) ?? [],
+            tags: tagsByRecipe.get(recipeId) ?? [],
+            categories: categoryName ? [{ id: row.category_id, emertimi: categoryName }] : []
+        };
+    });
+}
 //create recipe
 export async function insertFullRecipe(recipeData: any, steps: any[], ingredients: any[], tags: string[]) {
     const conn = await db.getConnection();
@@ -91,7 +150,7 @@ export async function getAllRecipes() {
     const [rows] = supportsVisibility
         ? await db.query(`${RECIPE_SELECT_WITH_AUTHOR} WHERE COALESCE(r.is_hidden, FALSE) = FALSE ORDER BY r.id DESC`)
         : await db.query(`${RECIPE_SELECT_WITH_AUTHOR} ORDER BY r.id DESC`);
-    return rows as RowDataPacket[];
+    return attachRecipeRelations(rows as RowDataPacket[]);
 }
 
 export async function getRecipesByUserId(userId: number, includeHidden = false) {

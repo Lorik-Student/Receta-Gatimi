@@ -29,7 +29,6 @@ type HeaderProps = {
 const navItems: HeaderNavItem[] = [
   { label: 'Kryefaqja', to: '/' },
   { label: 'Receta', to: '/recipes' },
-  { label: 'Kategoritë', to: '/categories' },
   { label: 'Rreth nesh', to: '/about' },
 ];
 

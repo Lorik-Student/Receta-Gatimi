@@ -1,20 +1,20 @@
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { NavigationBar } from "./components/NavigationBar";
 import { LoginAction, LoginPage } from "./pages/LoginPage.jsx";
 import { SignupAction, SignupPage } from "./pages/SignupPage.jsx";
 import { ErrorPage } from "./pages/ErrorPage";
-import { HomePage } from "./pages/HomePage";
+import { HomePage, homeLoader } from "./pages/HomePage";
 import { RecipesPage, recipesLoader } from "./pages/RecipesPage";
 import { MyRecipesPage, myRecipesLoader } from "./pages/MyRecipesPage";
 import { RecipePage, recipeLoader } from "./pages/RecipePage";
 import { CreateRecipePage, createRecipeLoader } from "./pages/CreateRecipePage.jsx";
-import { CategoriesPage, categoriesLoader } from "./pages/CategoriesPage";
 import { ProfilePage, profileLoader } from "./pages/ProfilePage.jsx";
 import { FavoritesPage, favoritesLoader } from "./pages/FavoritesPage.jsx";
 import { FavoriteCategoryPage, favoriteCategoryLoader } from "./pages/FavoriteCategoryPage";
 import { UserRecipesPage, userRecipesLoader } from "./pages/UserRecipesPage";
 import { UserFavoritesPage, userFavoritesLoader } from "./pages/UserFavoritesPage";
 import { AboutUsPage } from "./pages/AboutUsPage";
+import { ShoppingListPage, shoppingListLoader } from "./pages/ShoppingListPage";
 
 import { AdminLayout, AdminDashboardOverview } from "./pages/admin/AdminDashboard";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
@@ -48,6 +48,7 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: <HomePage />,
+                loader: homeLoader
             },
             {
                 path: "/login",
@@ -81,8 +82,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/categories",
-                element: <CategoriesPage />,
-                loader: categoriesLoader
+                element: <Navigate to="/recipes#recipe-categories" replace />
             },
             {
                 path: "/about",
@@ -112,6 +112,11 @@ export const router = createBrowserRouter([
                 path: "/profile/favorites",
                 element: <FavoritesPage />,
                 loader: favoritesLoader
+            },
+            {
+                path: "/profile/shopping-list",
+                element: <ShoppingListPage />,
+                loader: shoppingListLoader
             },
             {
                 path: "/profile/favorites/:id",

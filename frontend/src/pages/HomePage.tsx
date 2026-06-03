@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useLoaderData } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { useNavigate } from 'react-router-dom';
-import { NavigationBar } from '../components/NavigationBar';
 import { Cards, RecipeCardData } from '../components/Cards';
 import { Footer } from '../components/Footer';
+import { apiFetch } from '../api';
 import './HomePage.css';
 
 type SearchBarProps = {
@@ -12,14 +13,57 @@ type SearchBarProps = {
   onSearch: () => void;
 };
 
-const categories = [
-  { label: 'Të gjitha recetat', isActive: true },
-  { label: 'Parapjatë' },
-  { label: 'Pjatë kryesore' },
-  { label: 'Ëmbëlsira' },
-  { label: 'Vegetariane' },
-  { label: 'Të shpejta & të lehta' },
-];
+type CategoryRecord = {
+  id?: number | string;
+  emertimi?: string;
+  name?: string;
+};
+
+type HomeLoaderData = {
+  categories?: CategoryRecord[];
+};
+
+function readCollection<T>(payload: unknown, keys: string[]): T[] {
+  if (Array.isArray(payload)) {
+    return payload as T[];
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+
+  const record = payload as Record<string, unknown>;
+  for (const key of keys) {
+    const value = record[key];
+    if (Array.isArray(value)) {
+      return value as T[];
+    }
+  }
+
+  return Object.values(record).filter(
+    (value): value is T => typeof value === 'object' && value !== null && 'id' in value
+  );
+}
+
+function getCategoryLabel(category: CategoryRecord) {
+  return (category.emertimi || category.name || 'Kategori').trim();
+}
+
+function getCategoryId(category: CategoryRecord) {
+  return String(category.id ?? '');
+}
+
+export async function homeLoader() {
+  const response = await apiFetch('/categories');
+
+  if (!response.ok) {
+    throw new Error((response as any).error?.message || 'Dështoi ngarkimi i kategorive');
+  }
+
+  return {
+    categories: readCollection<CategoryRecord>(response, ['categories', 'data'])
+  };
+}
 
 const featuredRecipes: RecipeCardData[] = [
   {
@@ -78,13 +122,33 @@ const SearchBar: React.FC<SearchBarProps> = ({ query, onQueryChange, onSearch })
 );
 
 export const HomePage: React.FC = () => {
+  const data = useLoaderData() as HomeLoaderData;
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const categoryStripRef = useRef<HTMLDivElement | null>(null);
+  const categories = Array.isArray(data.categories) ? data.categories : [];
+
+  const categoryButtons = categories
+    .filter((category) => getCategoryId(category) && getCategoryLabel(category))
+    .map((category) => ({
+      id: getCategoryId(category),
+      label: getCategoryLabel(category)
+    }));
 
   const doSearch = (q: string) => {
     const trimmed = q.trim();
     if (!trimmed) return;
     navigate(`/recipes?q=${encodeURIComponent(trimmed)}`);
+  };
+
+  const scrollCategories = (direction: "left" | "right") => {
+    const container = categoryStripRef.current;
+    if (!container) {
+      return;
+    }
+
+    const offset = direction === "left" ? -320 : 320;
+    container.scrollBy({ left: offset, behavior: "smooth" });
   };
 
   return (
@@ -120,7 +184,47 @@ export const HomePage: React.FC = () => {
 
         <section className="max-w-container-max-width mx-auto px-margin-desktop py-12">
           <div className="mb-10">
-            <NavigationBar title="Eksploro kategoritë" items={categories} />
+            <h3 className="font-headline-sm text-on-surface mb-4">Eksploro kategoritë</h3>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => scrollCategories('left')}
+                aria-label="Lëviz kategoritë majtas"
+                className="hidden md:inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant/40 bg-surface text-on-surface-variant shadow-sm transition-colors hover:bg-surface-container hover:text-primary"
+              >
+                <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              </button>
+
+              <div ref={categoryStripRef} className="flex gap-3 overflow-x-auto no-scrollbar pb-2 scroll-smooth">
+                <button
+                  type="button"
+                  onClick={() => navigate('/recipes')}
+                  className="px-6 py-2.5 rounded-full bg-primary text-white font-label-md whitespace-nowrap shadow-sm hover:shadow-md transition-all"
+                >
+                  Të gjitha recetat
+                </button>
+
+                {categoryButtons.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => navigate(`/recipes?category=${encodeURIComponent(category.id)}`)}
+                    className="px-6 py-2.5 rounded-full bg-surface-container border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-high hover:text-primary font-label-md whitespace-nowrap transition-colors"
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => scrollCategories('right')}
+                aria-label="Lëviz kategoritë djathtas"
+                className="hidden md:inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant/40 bg-surface text-on-surface-variant shadow-sm transition-colors hover:bg-surface-container hover:text-primary"
+              >
+                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between mb-6">

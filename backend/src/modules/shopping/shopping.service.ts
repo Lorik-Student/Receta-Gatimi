@@ -1,5 +1,5 @@
 import * as ShoppingModel from "./shopping.model.js";
-import type {  ShoppingList, ListItem } from "../../common/types/index.js";
+import type { ListItem, ShoppingList, ShoppingListWithItems } from "../../common/types/index.js";
 
 
 export async function createFullList(userId: number, title: string, items: any[]): Promise<number> {
@@ -14,6 +14,14 @@ export async function createFullList(userId: number, title: string, items: any[]
 
 export async function getUserLists(userId: number): Promise<ShoppingList[]> {
     return ShoppingModel.getListsByUser(userId);
+}
+
+export async function getDefaultShoppingList(userId: number): Promise<ShoppingListWithItems> {
+    return ShoppingModel.getDefaultListWithItems(userId);
+}
+
+export async function addRecipeIngredientsToDefaultList(userId: number, recipeId: number, ingredientIds?: number[]): Promise<ShoppingListWithItems> {
+    return ShoppingModel.addIngredientsToDefaultList(userId, recipeId, ingredientIds);
 }
 
 export async function updateShoppingList(listId: number, userId: number, title: string): Promise<boolean> {

@@ -12,3 +12,12 @@ export interface ListItem {
     sasia: string;
     eshte_blere: boolean;
 }
+
+export interface ShoppingListItemDetails extends ListItem {
+    ingredient_emertimi: string;
+    ingredient_njesia_matese: string | null;
+}
+
+export interface ShoppingListWithItems extends ShoppingList {
+    items: ShoppingListItemDetails[];
+}
