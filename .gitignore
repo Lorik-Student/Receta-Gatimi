@@ -7,3 +7,4 @@ todo.txt
 database/flyway.toml
 .github
 graphify-out
+dist
