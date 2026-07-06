@@ -8,6 +8,9 @@ interface ReviewRecord {
   vleresimi: number;
   komenti: string;
   data?: string;
+  recipe_title?: string;
+  reviewer_emri?: string;
+  reviewer_mbiemri?: string;
 }
 
 type ReviewDraft = {
@@ -29,7 +32,7 @@ function formatDate(value?: string) {
 }
 
 export function AdminInteractionsPage() {
-  const [recipeId, setRecipeId] = useState("1");
+  const [recipeId, setRecipeId] = useState("");
   const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,15 +41,17 @@ export function AdminInteractionsPage() {
   const [draftError, setDraftError] = useState("");
 
   async function loadReviews() {
-    const parsedRecipeId = Number(recipeId);
-    if (!Number.isInteger(parsedRecipeId) || parsedRecipeId <= 0) {
-      setDraftError("Enter a valid recipe ID first.");
+    const trimmedRecipeId = recipeId.trim();
+    const parsedRecipeId = Number(trimmedRecipeId);
+
+    if (trimmedRecipeId && (!Number.isInteger(parsedRecipeId) || parsedRecipeId <= 0)) {
+      setDraftError("Enter a valid recipe ID, or leave it empty to load all reviews.");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await apiFetch(`/interactions/reviews/recipe/${parsedRecipeId}`);
+      const response = await apiFetch(trimmedRecipeId ? `/interactions/reviews/recipe/${parsedRecipeId}` : "/interactions/reviews/admin");
       setReviews(readCollection<ReviewRecord>(response, ["reviews", "data"]));
       setDraftError("");
     } catch (error) {
@@ -76,7 +81,7 @@ export function AdminInteractionsPage() {
     if (!selectedReview) return;
 
     try {
-      const response = await apiFetch(`/interactions/reviews/${selectedReview.id}`, {
+      const response = await apiFetch(`/interactions/reviews/admin/${selectedReview.id}`, {
         method: "PATCH",
         body: JSON.stringify(draft),
       });
@@ -96,7 +101,10 @@ export function AdminInteractionsPage() {
   async function deleteReview(review: ReviewRecord) {
     if (!window.confirm(`Delete review #${review.id}?`)) return;
     try {
-      await apiFetch(`/interactions/reviews/${review.id}`, { method: "DELETE" });
+      const response = await apiFetch(`/interactions/reviews/admin/${review.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error("Failed to delete review");
+      }
       await loadReviews();
     } catch (error) {
       console.error("Failed to delete review:", error);
@@ -108,12 +116,13 @@ export function AdminInteractionsPage() {
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-3xl font-bold" style={{ fontFamily: "var(--font-headline-md)", color: "var(--color-on-surface)" }}>Interaction Management</h2>
-          <p className="mt-2 text-base" style={{ color: "var(--color-on-surface-variant)" }}>Inspect and moderate review data by recipe ID.</p>
+          <p className="mt-2 text-base" style={{ color: "var(--color-on-surface-variant)" }}>Inspect and moderate review data across the platform or by recipe ID.</p>
         </div>
         <div className="flex items-center gap-3">
           <input
             type="number"
             min={1}
+            placeholder="All"
             className="w-32 rounded-xl border px-4 py-2.5 text-sm outline-none"
             style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-outline-variant)", color: "var(--color-on-surface)" }}
             value={recipeId}
@@ -136,7 +145,7 @@ export function AdminInteractionsPage() {
         </article>
         <article className="rounded-2xl p-5 shadow-sm xl:col-span-2" style={{ backgroundColor: "var(--color-surface)", border: "1px solid var(--color-outline-variant)" }}>
           <p className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--color-on-surface-variant)" }}>How this page works</p>
-          <p className="mt-2 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>Enter a recipe ID, load the reviews, then edit or delete the rows returned by the live API.</p>
+          <p className="mt-2 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>Leave the recipe ID empty for all reviews, or enter one recipe ID to narrow the table.</p>
         </article>
       </div>
 
@@ -156,11 +165,13 @@ export function AdminInteractionsPage() {
               {loading ? (
                 <tr><td colSpan={5} className="px-6 py-10 text-center text-sm font-medium" style={{ color: "var(--color-on-surface-variant)" }}>Loading reviews...</td></tr>
               ) : reviews.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-10 text-center text-sm font-medium" style={{ color: "var(--color-on-surface-variant)" }}>No reviews loaded for this recipe.</td></tr>
+                <tr><td colSpan={5} className="px-6 py-10 text-center text-sm font-medium" style={{ color: "var(--color-on-surface-variant)" }}>No reviews found.</td></tr>
               ) : (
                 reviews.map((review) => (
                   <tr key={review.id} className="transition-colors hover:bg-black/5">
-                    <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface)" }}>#{review.id} · user {review.user_id}</td>
+                    <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface)" }}>
+                      #{review.id} - {review.recipe_title || `Recipe ${review.recipe_id}`} - {[review.reviewer_emri, review.reviewer_mbiemri].filter(Boolean).join(" ") || `user ${review.user_id}`}
+                    </td>
                     <td className="px-6 py-4 text-sm font-semibold" style={{ color: "var(--color-on-surface)" }}>{review.vleresimi}</td>
                     <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>{review.komenti}</td>
                     <td className="px-6 py-4 text-sm" style={{ color: "var(--color-on-surface-variant)" }}>{formatDate(review.data)}</td>

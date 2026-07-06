@@ -34,6 +34,11 @@ export async function getReviews(req: Request, res: Response) {
     res.json({ reviews });
 }
 
+export async function getAllReviews(req: Request, res: Response) {
+    const reviews = await InteractionService.getAllReviews();
+    res.json({ reviews });
+}
+
 export async function modifyReview(req: Request, res: Response) {
     const reviewId = Number(req.params.id);
     const userId = getAuthenticatedUserId(req);
@@ -45,6 +50,16 @@ export async function modifyReview(req: Request, res: Response) {
     res.json({ message: "Review updated successfully." });
 }
 
+export async function modifyReviewAsAdmin(req: Request, res: Response) {
+    const reviewId = Number(req.params.id);
+    const { vleresimi, komenti = "" } = req.body;
+
+    const success = await InteractionService.modifyReviewAsAdmin(reviewId, vleresimi, komenti);
+    if (!success) throw new NotFoundError("REVIEW_NOT_FOUND", "Review not found.");
+
+    res.json({ message: "Review updated successfully." });
+}
+
 export async function removeReview(req: Request, res: Response) {
     const reviewId = Number(req.params.id);
     const userId = getAuthenticatedUserId(req);
@@ -52,6 +67,15 @@ export async function removeReview(req: Request, res: Response) {
     const success = await InteractionService.removeReview(reviewId, userId);
     if (!success) throw new NotFoundError("REVIEW_NOT_FOUND", "Review not found or unauthorized to delete.");
     
+    res.status(204).send();
+}
+
+export async function removeReviewAsAdmin(req: Request, res: Response) {
+    const reviewId = Number(req.params.id);
+
+    const success = await InteractionService.removeReviewAsAdmin(reviewId);
+    if (!success) throw new NotFoundError("REVIEW_NOT_FOUND", "Review not found.");
+
     res.status(204).send();
 }
 

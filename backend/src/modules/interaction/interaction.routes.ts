@@ -25,6 +25,9 @@ const router = Router();
 
 // Reviews
 router.post("/reviews", userAuthMiddleware, validate({ body: reviewBodySchema }), InteractionController.addReview);
+router.get("/reviews/admin", adminAuthMiddleware, InteractionController.getAllReviews);
+router.patch("/reviews/admin/:id", adminAuthMiddleware, validate({ params: reviewIdParamsSchema, body: reviewUpdateBodySchema }), InteractionController.modifyReviewAsAdmin);
+router.delete("/reviews/admin/:id", adminAuthMiddleware, validate({ params: reviewIdParamsSchema }), InteractionController.removeReviewAsAdmin);
 router.get("/reviews/recipe/:recipeId", validate({ params: recipeReviewParamsSchema }), InteractionController.getReviews);
 router.patch("/reviews/:id", userAuthMiddleware, validate({ params: reviewIdParamsSchema, body: reviewUpdateBodySchema }), InteractionController.modifyReview);
 router.delete("/reviews/:id", userAuthMiddleware, validate({ params: reviewIdParamsSchema }), InteractionController.removeReview);

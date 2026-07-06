@@ -77,5 +77,9 @@ export const apiFetch = async (path: string, init: RequestInit = {}): Promise<Ap
         }
     }
 
+    if (Array.isArray(payload)) {
+        return Object.assign(payload, { response, ok: response.ok }) as unknown as ApiResult;
+    }
+
     return { ...payload, response, ok: response.ok };
 }

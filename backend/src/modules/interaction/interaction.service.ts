@@ -22,12 +22,24 @@ export async function getRecipeReviews(recipeId: number): Promise<Review[]> {
     return InteractionModel.getReviewsByRecipe(recipeId);
 }
 
+export async function getAllReviews(): Promise<Review[]> {
+    return InteractionModel.getAllReviews();
+}
+
 export async function modifyReview(reviewId: number, userId: number, vleresimi: number, komenti: string): Promise<boolean> {
     return InteractionModel.updateReview(reviewId, userId, vleresimi, komenti);
 }
 
+export async function modifyReviewAsAdmin(reviewId: number, vleresimi: number, komenti: string): Promise<boolean> {
+    return InteractionModel.updateReviewById(reviewId, vleresimi, komenti);
+}
+
 export async function removeReview(reviewId: number, userId: number): Promise<boolean> {
     return InteractionModel.deleteReview(reviewId, userId);
+}
+
+export async function removeReviewAsAdmin(reviewId: number): Promise<boolean> {
+    return InteractionModel.deleteReviewById(reviewId);
 }
 
 export async function addRecipeReport(userId: number, recipeId: number, reason: string): Promise<{ id: number; created: boolean; hidden: boolean }> {

@@ -111,7 +111,7 @@ export function AdminDashboardOverview() {
           apiFetch("/users"),
           apiFetch("/recipes/admin"),
           apiFetch("/categories"),
-          apiFetch("/interactions/reviews/recipe/1")
+          apiFetch("/interactions/reviews/admin")
         ]);
 
         setStats({

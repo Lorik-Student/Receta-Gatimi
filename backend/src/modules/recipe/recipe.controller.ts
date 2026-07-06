@@ -11,6 +11,8 @@ export async function getDashboard(req: Request, res: Response) {
 export async function createFullRecipe(req: Request, res: Response) {
     const claims = (req as RequestWithClaims).claims;
     const userId = claims?.sub || claims?.id;
+    const isAdmin = Array.isArray(claims?.roles) && claims.roles.includes("admin");
+    const requestedUserId = Number(req.body.user_id);
     
     if (!userId) {
         throw new BadRequestError("INVALID_USER", "Nuk mund të përcaktohet përdoruesi aktual");
@@ -18,7 +20,7 @@ export async function createFullRecipe(req: Request, res: Response) {
 
     const payload = {
         ...req.body,
-        user_id: userId
+        user_id: isAdmin && Number.isInteger(requestedUserId) && requestedUserId > 0 ? requestedUserId : Number(userId)
     };
 
     const id = await RecipeService.createRecipe(payload);

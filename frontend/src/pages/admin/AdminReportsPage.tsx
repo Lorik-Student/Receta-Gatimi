@@ -143,7 +143,7 @@ export function AdminReportsPage() {
 
     try {
       const response = await apiFetch(`/interactions/reports/recipes/${recipeId}`, { method: "DELETE" });
-      if (!response.ok && response.response.status !== 204) throw new Error("Failed to delete recipe");
+      if (!response.ok) throw new Error("Failed to delete recipe");
       setActionMessage(`Receta "${recipeTitle}" u fshi.`);
       await loadReports();
     } catch (error) {
@@ -268,7 +268,7 @@ export function AdminReportsPage() {
                             </div>
                             <div>
                               <p className="text-sm font-semibold" style={{ color: "var(--color-on-surface)" }}>{report.recipe_title}</p>
-                              <p className="text-xs" style={{ color: "var(--color-on-surface-variant)" }}>ID {report.recipe_id} · {report.recipe_hidden ? "Hidden" : "Visible"}</p>
+                              <p className="text-xs" style={{ color: "var(--color-on-surface-variant)" }}>ID {report.recipe_id} - {report.recipe_hidden ? "Hidden" : "Visible"}</p>
                             </div>
                           </div>
                         </td>

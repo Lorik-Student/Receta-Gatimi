@@ -189,10 +189,29 @@ export async function getReviewsByRecipe(recipeId: number): Promise<Review[]> {
     return rows as Review[];
 }
 
+export async function getAllReviews(): Promise<Review[]> {
+    const [rows] = await db.query<RowDataPacket[]>(
+        `SELECT r.*, u.emri AS reviewer_emri, u.mbiemri AS reviewer_mbiemri, rec.titulli AS recipe_title
+         FROM Reviews r
+         LEFT JOIN users u ON u.id = r.user_id
+         LEFT JOIN Recipes rec ON rec.id = r.recipe_id
+         ORDER BY r.data DESC`
+    );
+    return rows as Review[];
+}
+
 export async function updateReview(reviewId: number, userId: number, vleresimi: number, komenti: string): Promise<boolean> {
     const [res] = await db.query<ResultSetHeader>(
         "UPDATE Reviews SET vleresimi = ?, komenti = ? WHERE id = ? AND user_id = ?",
         [vleresimi, komenti, reviewId, userId]
+    );
+    return res.affectedRows > 0;
+}
+
+export async function updateReviewById(reviewId: number, vleresimi: number, komenti: string): Promise<boolean> {
+    const [res] = await db.query<ResultSetHeader>(
+        "UPDATE Reviews SET vleresimi = ?, komenti = ? WHERE id = ?",
+        [vleresimi, komenti, reviewId]
     );
     return res.affectedRows > 0;
 }
@@ -248,6 +267,14 @@ export async function deleteReview(reviewId: number, userId: number): Promise<bo
     const [res] = await db.query<ResultSetHeader>(
         "DELETE FROM Reviews WHERE id = ? AND user_id = ?",
         [reviewId, userId]
+    );
+    return res.affectedRows > 0;
+}
+
+export async function deleteReviewById(reviewId: number): Promise<boolean> {
+    const [res] = await db.query<ResultSetHeader>(
+        "DELETE FROM Reviews WHERE id = ?",
+        [reviewId]
     );
     return res.affectedRows > 0;
 }
