@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../api";
+import { API_BASE_URL } from "../config/env";
 
 function isAbsoluteImageSource(value: string) {
     return /^https?:\/\//i.test(value) || /^data:/i.test(value) || /^blob:/i.test(value);

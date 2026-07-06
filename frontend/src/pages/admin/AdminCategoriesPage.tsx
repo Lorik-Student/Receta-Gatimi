@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
+import { readArrayPayload } from "../../lib/apiPayload";
 
 interface CategoryRecord {
   id: number;
@@ -14,15 +15,6 @@ interface CategoryDraft {
   emertimi: string;
   pershkrimi: string;
   imazhi: string;
-}
-
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) return payload as T[];
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) return value as T[];
-  }
-  return [];
 }
 
 function emptyCategoryDraft(): CategoryDraft {
@@ -51,7 +43,7 @@ export function AdminCategoriesPage() {
     setLoading(true);
     try {
       const response = await apiFetch("/categories");
-      setCategories(readCollection<CategoryRecord>(response, ["categories", "data"]));
+      setCategories(readArrayPayload<CategoryRecord>(response, ["categories", "data"]));
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     } finally {

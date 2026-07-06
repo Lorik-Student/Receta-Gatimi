@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
+import { readArrayPayload } from "../../lib/apiPayload";
 
 type UserRole = "guest" | "user" | "chef" | "admin";
 
@@ -31,15 +32,6 @@ type UserDraft = {
 };
 
 const roleOptions: UserRole[] = ["guest", "user", "chef", "admin"];
-
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) return payload as T[];
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) return value as T[];
-  }
-  return [];
-}
 
 function formatDate(value?: string | null) {
   return value ? new Date(value).toLocaleDateString() : "-";
@@ -73,7 +65,7 @@ export function AdminUsersPage() {
     setLoading(true);
     try {
       const response = await apiFetch("/users");
-      setUsers(readCollection<UserRecord>(response, ["users", "data"]));
+      setUsers(readArrayPayload<UserRecord>(response, ["users", "data"]));
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {

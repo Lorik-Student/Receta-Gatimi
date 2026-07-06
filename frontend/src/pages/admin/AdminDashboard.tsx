@@ -1,21 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { apiFetch } from "../../api";
-
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return [];
-}
+import { readArrayPayload } from "../../lib/apiPayload";
 
 export function AdminLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -115,10 +101,10 @@ export function AdminDashboardOverview() {
         ]);
 
         setStats({
-          users: readCollection(usersRes, ["users", "data"]).length,
-          recipes: readCollection(recipesRes, ["recipes", "data"]).length,
-          categories: readCollection(categoriesRes, ["categories", "data"]).length,
-          reviews: readCollection(reviewsRes, ["reviews", "data"]).length,
+          users: readArrayPayload(usersRes, ["users", "data"]).length,
+          recipes: readArrayPayload(recipesRes, ["recipes", "data"]).length,
+          categories: readArrayPayload(categoriesRes, ["categories", "data"]).length,
+          reviews: readArrayPayload(reviewsRes, ["reviews", "data"]).length,
         });
       } catch (error) {
         console.error("Error loading stats:", error);

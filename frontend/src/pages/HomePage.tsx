@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Cards, RecipeCardData } from '../components/Cards';
 import { Footer } from '../components/Footer';
 import { apiFetch } from '../api';
+import { readArrayPayload } from '../lib/apiPayload';
 import './HomePage.css';
 
 type SearchBarProps = {
@@ -23,28 +24,6 @@ type HomeLoaderData = {
   categories?: CategoryRecord[];
 };
 
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  if (!payload || typeof payload !== 'object') {
-    return [];
-  }
-
-  const record = payload as Record<string, unknown>;
-  for (const key of keys) {
-    const value = record[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return Object.values(record).filter(
-    (value): value is T => typeof value === 'object' && value !== null && 'id' in value
-  );
-}
-
 function getCategoryLabel(category: CategoryRecord) {
   return (category.emertimi || category.name || 'Kategori').trim();
 }
@@ -61,7 +40,7 @@ export async function homeLoader() {
   }
 
   return {
-    categories: readCollection<CategoryRecord>(response, ['categories', 'data'])
+    categories: readArrayPayload<CategoryRecord>(response, ['categories', 'data'])
   };
 }
 

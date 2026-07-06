@@ -4,6 +4,7 @@ import { apiFetch } from "../api";
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Cards, RecipeCardData } from '../components/Cards';
+import { readArrayPayload } from "../lib/apiPayload";
 
 const RECIPE_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80";
 
@@ -39,28 +40,6 @@ type RecipesLoaderData = {
   categories?: CategoryRecord[];
 };
 
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const record = payload as Record<string, unknown>;
-  for (const key of keys) {
-    const value = record[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return Object.values(record).filter(
-    (value): value is T => typeof value === "object" && value !== null && "id" in value
-  );
-}
-
 function isValidCategory(category: CategoryRecord): category is CategoryRecord & { id: number; emertimi: string } {
   const parsedId = Number(category.id);
   return Number.isInteger(parsedId) && parsedId > 0 && typeof category.emertimi === "string" && category.emertimi.trim().length > 0;
@@ -94,8 +73,8 @@ export async function recipesLoader() {
   }
 
   return {
-    recipes: readCollection<RecipeRecord>(recipesResult, ["recipes", "data"]),
-    categories: readCollection<CategoryRecord>(categoriesResult, ["categories", "data"])
+    recipes: readArrayPayload<RecipeRecord>(recipesResult, ["recipes", "data"]),
+    categories: readArrayPayload<CategoryRecord>(categoriesResult, ["categories", "data"])
   };
 }
 

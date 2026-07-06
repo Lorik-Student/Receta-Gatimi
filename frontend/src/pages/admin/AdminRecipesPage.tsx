@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
+import { readArrayPayload } from "../../lib/apiPayload";
 
 interface RecipeRecord {
   id: number;
@@ -53,15 +54,6 @@ interface RecipeDraft {
   steps: RecipeStepDraft[];
   ingredients: RecipeIngredientDraft[];
   tags: string[];
-}
-
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) return payload as T[];
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) return value as T[];
-  }
-  return [];
 }
 
 function emptyRecipeDraft(): RecipeDraft {
@@ -138,9 +130,9 @@ export function AdminRecipesPage() {
         apiFetch("/categories"),
       ]);
 
-      setRecipes(readCollection<RecipeRecord>(recipesResponse, ["recipes", "data"]));
-      setUsers(readCollection<LookupRecord>(usersResponse, ["users", "data"]));
-      setCategories(readCollection<LookupRecord>(categoriesResponse, ["categories", "data"]));
+      setRecipes(readArrayPayload<RecipeRecord>(recipesResponse, ["recipes", "data"]));
+      setUsers(readArrayPayload<LookupRecord>(usersResponse, ["users", "data"]));
+      setCategories(readArrayPayload<LookupRecord>(categoriesResponse, ["categories", "data"]));
     } catch (error) {
       console.error("Failed to fetch admin recipe data:", error);
     } finally {

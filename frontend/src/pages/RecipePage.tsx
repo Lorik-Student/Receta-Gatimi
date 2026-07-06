@@ -3,7 +3,10 @@ import { useLoaderData, Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
-import { resolveImageSrc } from "../utils/image";
+import { FavoriteRecipeDialog } from "../features/favorites/FavoriteRecipeDialog";
+import { getFavoritesState } from "../features/favorites/favoritesApi";
+import type { FavoriteCategory } from "../features/favorites/types";
+import { readArrayPayload } from "../lib/apiPayload";
 
 const RECIPE_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80";
 
@@ -16,21 +19,6 @@ interface ReviewRecord {
   data?: string;
   reviewer_emri?: string;
   reviewer_mbiemri?: string;
-}
-
-interface FavoriteRecipe {
-  favorite_id: number;
-  recipe_id: number;
-  titulli: string;
-  imazhi?: string;
-}
-
-interface FavoriteCategory {
-  id: number;
-  emertimi: string;
-  is_public: boolean;
-  imazhi?: string;
-  recipes: FavoriteRecipe[];
 }
 
 type ReviewDraft = {
@@ -50,21 +38,6 @@ type ReportDraft = {
   reason: string;
 };
 
-function readCollection<T>(payload: unknown, keys: string[] = ["reviews", "data"]): T[] {
-  if (Array.isArray(payload)) {
-    return payload as T[];
-  }
-
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) {
-      return value as T[];
-    }
-  }
-
-  return [];
-}
-
 function formatDate(value?: string) {
   return value ? new Date(value).toLocaleDateString("sq-AL") : "-";
 }
@@ -79,10 +52,6 @@ function renderStars(value: number) {
       star
     </span>
   ));
-}
-
-function getCategoryThumbnail(category: FavoriteCategory) {
-  return resolveImageSrc(category.imazhi || category.recipes?.[0]?.imazhi);
 }
 
 export async function recipeLoader({ params }: any) {
@@ -107,15 +76,11 @@ export function RecipePage() {
   const [reviewSuccess, setReviewSuccess] = useState("");
   const [draft, setDraft] = useState<ReviewDraft>({ vleresimi: 5, komenti: "" });
   const [favoriteCategories, setFavoriteCategories] = useState<FavoriteCategory[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [favoriteSubmitting, setFavoriteSubmitting] = useState(false);
-  const [categoryCreating, setCategoryCreating] = useState(false);
-  const [favoriteMessage, setFavoriteMessage] = useState("");
   const [favoriteError, setFavoriteError] = useState("");
   const [favoriteMenuOpen, setFavoriteMenuOpen] = useState(false);
-  const [categoryDraftName, setCategoryDraftName] = useState("");
   const [shoppingMessage, setShoppingMessage] = useState("");
   const [shoppingError, setShoppingError] = useState("");
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
@@ -135,7 +100,7 @@ export function RecipePage() {
     setLoadingReviews(true);
     try {
       const response = await apiFetch(`/interactions/reviews/recipe/${recipeId}`);
-      setReviews(readCollection<ReviewRecord>(response));
+      setReviews(readArrayPayload<ReviewRecord>(response, ["reviews", "data"]));
     } catch (error) {
       console.error("Failed to load reviews:", error);
       setReviewError("Nuk mund të ngarkohen komentet për këtë recetë.");
@@ -169,19 +134,9 @@ export function RecipePage() {
     setFavoriteError("");
 
     try {
-      const response = await apiFetch("/interactions/favorites");
-      const favoritesPayload = (response as any)?.favorites;
-      const categories = Array.isArray(favoritesPayload?.categories) ? favoritesPayload.categories : [];
-      const uncategorized = Array.isArray(favoritesPayload?.uncategorized) ? favoritesPayload.uncategorized : [];
-
-      setFavoriteCategories(categories);
-
-      const inCategories = categories.some((category: FavoriteCategory) =>
-        Array.isArray(category.recipes) && category.recipes.some((item: FavoriteRecipe) => Number(item.recipe_id) === recipeId)
-      );
-      const inUncategorized = uncategorized.some((item: FavoriteRecipe) => Number(item.recipe_id) === recipeId);
-
-      setIsFavorited(inCategories || inUncategorized);
+      const state = await getFavoritesState();
+      setFavoriteCategories(state.categories);
+      setIsFavorited(state.recipeIds.has(recipeId));
     } catch (error) {
       console.error("Failed to load favorite state:", error);
       setFavoriteError("Nuk u ngarkuan të preferuarat.");
@@ -267,131 +222,7 @@ export function RecipePage() {
     }
 
     setFavoriteError("");
-    setFavoriteMessage("");
-    setCategoryDraftName("");
     setFavoriteMenuOpen(true);
-  }
-
-  async function createFavoriteCategory() {
-    const name = categoryDraftName.trim();
-    if (name.length < 2) {
-      setFavoriteError("Emri i kategorisë duhet të ketë të paktën 2 karaktere.");
-      return;
-    }
-
-    setCategoryCreating(true);
-    setFavoriteError("");
-    setFavoriteMessage("");
-
-    try {
-      const response = await apiFetch("/interactions/favorites/categories", {
-        method: "POST",
-        body: JSON.stringify({ emertimi: name, is_public: false })
-      });
-
-      const createdCategoryId = Number((response as any)?.id);
-      setCategoryDraftName("");
-      await loadFavoriteState();
-      if (Number.isInteger(createdCategoryId) && createdCategoryId > 0) {
-        setSelectedCategoryId(String(createdCategoryId));
-      } else {
-        const match = favoriteCategories.find((category) => category.emertimi.trim().toLowerCase() === name.toLowerCase());
-        if (match) {
-          setSelectedCategoryId(String(match.id));
-        }
-      }
-      setFavoriteMessage("Kategoria u krijua.");
-    } catch (error) {
-      console.error("Failed to create favorite category:", error);
-      try {
-        const refresh = await apiFetch("/interactions/favorites");
-        const refreshedPayload = (refresh as any)?.favorites;
-        const refreshedCategories = Array.isArray(refreshedPayload?.categories) ? refreshedPayload.categories : [];
-        const match = refreshedCategories.find((category: FavoriteCategory) => category.emertimi.trim().toLowerCase() === name.toLowerCase());
-
-        if (match) {
-          setFavoriteCategories(refreshedCategories);
-          setSelectedCategoryId(String(match.id));
-          setCategoryDraftName("");
-          setFavoriteMessage("Kategoria u krijua.");
-          setFavoriteError("");
-          return;
-        }
-      } catch {
-        // fall through to the user-facing error below
-      }
-
-      setFavoriteError("Krijimi i kategorisë dështoi.");
-    } finally {
-      setCategoryCreating(false);
-    }
-  }
-
-  async function saveFavoriteToCategory() {
-    if (!isAuthenticated) {
-      setFavoriteError("Duhet të hyni në llogari për të ruajtur receta te të preferuarat.");
-      return;
-    }
-
-    if (!Number.isInteger(recipeId) || recipeId <= 0) {
-      setShoppingError("Receta nuk është e vlefshme.");
-      return;
-    }
-
-    setFavoriteSubmitting(true);
-    setFavoriteError("");
-    setFavoriteMessage("");
-
-    try {
-      const parsedCategoryId = selectedCategoryId ? Number(selectedCategoryId) : undefined;
-      const response = await apiFetch("/interactions/favorites", {
-        method: "POST",
-        body: JSON.stringify({
-          recipeId,
-          categoryId: Number.isInteger(parsedCategoryId) && (parsedCategoryId as number) > 0 ? parsedCategoryId : undefined
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to add favorite");
-      }
-
-      setIsFavorited(true);
-      setFavoriteMessage("Receta u ruajt te të preferuarat.");
-
-      await loadFavoriteState();
-    } catch (error) {
-      console.error("Favorite action failed:", error);
-      setFavoriteError("Ruajtja te të preferuarat dështoi. Provoni përsëri.");
-    } finally {
-      setFavoriteSubmitting(false);
-    }
-  }
-
-  async function removeFavoriteFromRecipe() {
-    if (!Number.isInteger(recipeId) || recipeId <= 0) {
-      setFavoriteError("Receta nuk është e vlefshme.");
-      return;
-    }
-
-    setFavoriteSubmitting(true);
-    setFavoriteError("");
-    setFavoriteMessage("");
-
-    try {
-      const response = await apiFetch(`/interactions/favorites/recipe/${recipeId}`, { method: "DELETE" });
-      if (!response.ok) {
-        throw new Error("Failed to remove favorite");
-      }
-      setIsFavorited(false);
-      setFavoriteMessage("Receta u hoq nga të preferuarat.");
-      await loadFavoriteState();
-    } catch (error) {
-      console.error("Favorite remove failed:", error);
-      setFavoriteError("Heqja nga të preferuarat dështoi. Provoni përsëri.");
-    } finally {
-      setFavoriteSubmitting(false);
-    }
   }
 
   function openRecipeReportDialog() {
@@ -609,6 +440,12 @@ export function RecipePage() {
             {shoppingError && (
               <p className="mb-6 rounded-xl bg-error/10 px-4 py-3 text-sm text-error">
                 {shoppingError}
+              </p>
+            )}
+
+            {favoriteError && (
+              <p className="mb-6 rounded-xl bg-error/10 px-4 py-3 text-sm text-error">
+                {favoriteError}
               </p>
             )}
 
@@ -924,111 +761,15 @@ export function RecipePage() {
             )}
 
             {favoriteMenuOpen && (
-              <div className="fixed inset-0 z-[100] bg-black/35 backdrop-blur-[1px] flex items-center justify-center p-4" onClick={() => setFavoriteMenuOpen(false)}>
-                <div className="w-full max-w-[26rem] rounded-2xl border border-outline-variant/30 bg-surface p-5 shadow-xl" onClick={(event) => event.stopPropagation()}>
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <div>
-                      <h3 className="font-headline-sm text-on-surface">Ruaj në koleksion</h3>
-                      <p className="text-sm text-on-surface-variant mt-1 line-clamp-2">{recipe.titulli || recipe.title || "Recetë"}</p>
-                    </div>
-                    <span className={`material-symbols-outlined text-[22px] ${isFavorited ? 'text-primary' : 'text-on-surface-variant'}`} style={isFavorited ? { fontVariationSettings: "'FILL' 1" } : undefined}>
-                      favorite
-                    </span>
-                  </div>
-
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <label className="flex-1 text-sm font-medium text-on-surface">
-                      Kategoria e re
-                      <input
-                        value={categoryDraftName}
-                        onChange={(event) => setCategoryDraftName(event.target.value)}
-                        className="mt-2 w-full rounded-xl border border-outline-variant/40 bg-surface-variant/10 px-4 py-2.5 outline-none focus:border-primary"
-                        placeholder="P.sh. Darka"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => void createFavoriteCategory()}
-                      disabled={categoryCreating}
-                      className="mt-7 whitespace-nowrap rounded-full bg-primary px-4 py-2.5 text-white font-label-md hover:bg-primary/90 disabled:opacity-60"
-                    >
-                      Krijo kategori
-                    </button>
-                  </div>
-
-                  <div className="mt-4 border-t border-outline-variant/20 pt-4">
-                    <div className="max-h-[18rem] overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(180,120,70,0.45)_transparent]">
-                      <div className="grid grid-cols-3 gap-3">
-                        {favoriteCategories.length < 3 && Array.from({ length: 3 - favoriteCategories.length }).map((_, index) => (
-                          <div key={`empty-top-${index}`} className="aspect-square rounded-2xl border border-dashed border-outline-variant/30 bg-surface-variant/10" />
-                        ))}
-
-                        {favoriteCategories.map((category) => {
-                          const isSelected = Number(selectedCategoryId) === category.id;
-                          const thumbnail = getCategoryThumbnail(category);
-
-                          return (
-                            <button
-                              key={category.id}
-                              type="button"
-                              onClick={() => setSelectedCategoryId(String(category.id))}
-                              className={`aspect-square rounded-2xl border p-3 text-left transition-colors ${isSelected ? 'border-primary bg-primary/10' : 'border-outline-variant/30 bg-surface-variant/10 hover:bg-surface-variant/20'}`}
-                            >
-                              <div className="flex h-full flex-col justify-between">
-                                <div>
-                                  <div className="mb-2 overflow-hidden rounded-xl bg-surface-variant/20 aspect-square flex items-center justify-center">
-                                    {thumbnail ? (
-                                      <img src={thumbnail} alt={category.emertimi} className="h-full w-full object-cover" />
-                                    ) : (
-                                      <span className={`material-symbols-outlined text-[20px] ${isSelected ? 'text-primary' : 'text-on-surface-variant'}`}>
-                                        folder
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="mt-2 line-clamp-2 text-sm font-semibold text-on-surface">{category.emertimi}</p>
-                                </div>
-                                <div className="flex items-center justify-between text-[11px] text-on-surface-variant">
-                                  <span>{category.is_public ? 'Publike' : 'Private'}</span>
-                                  {isSelected && <span className="text-primary">Zgjedhur</span>}
-                                </div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {favoriteMessage && (
-                    <p className="mt-4 rounded-xl bg-primary/10 px-4 py-2.5 text-sm text-primary">{favoriteMessage}</p>
-                  )}
-                  {favoriteError && (
-                    <p className="mt-4 rounded-xl bg-error/10 px-4 py-2.5 text-sm text-error">{favoriteError}</p>
-                  )}
-
-                  <div className="mt-5 flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void saveFavoriteToCategory()}
-                      disabled={favoriteLoading || favoriteSubmitting || !recipeId}
-                      className="rounded-full bg-primary px-5 py-2.5 text-white font-label-md hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      {favoriteSubmitting ? "Duke ruajtur..." : "Ruaj"}
-                    </button>
-                    {isFavorited && (
-                      <button
-                        type="button"
-                        onClick={() => void removeFavoriteFromRecipe()}
-                        disabled={favoriteSubmitting}
-                        className="inline-flex items-center gap-2 rounded-full border border-outline-variant/40 px-5 py-2.5 text-on-surface font-label-md hover:bg-surface-variant/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-                        Unfavorite
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <FavoriteRecipeDialog
+                categories={favoriteCategories}
+                isFavorited={isFavorited}
+                loading={favoriteLoading}
+                recipeId={recipeId}
+                recipeTitle={recipe.titulli || recipe.title || "Recetë"}
+                onClose={() => setFavoriteMenuOpen(false)}
+                onChanged={loadFavoriteState}
+              />
             )}
 
           </div>

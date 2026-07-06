@@ -1,16 +1,37 @@
-# React + Vite
+# Receta Gatimi Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the recipe application.
 
-Currently, two official plugins are available:
+## Run
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+Useful checks:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run lint
+npm run build
+```
 
-## Expanding the ESLint configuration
+## Project Map
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `src/main.tsx` mounts the app.
+- `src/router.tsx` defines public, profile, recipe, and admin routes.
+- `src/api.ts` is the shared API client, including auth headers and token refresh.
+- `src/config/env.ts` centralizes environment-derived values.
+- `src/lib/` contains small shared utilities that are not tied to a feature.
+- `src/features/` contains feature-specific modules with their own API helpers, types, and components.
+- `src/components/` contains shared UI/layout components used across pages.
+- `src/pages/` contains route-level screens and loaders.
+- `src/style/` contains global CSS and design tokens.
+
+## Frontend Patterns
+
+Route pages should stay focused on page composition, route loaders, and local screen state. Reusable behavior belongs in `src/features/<feature-name>` when it is domain-specific, or `src/lib` when it is generic.
+
+API response parsing should use `readArrayPayload` from `src/lib/apiPayload.ts` instead of duplicating payload-shape checks in each page.
+
+Favorite-related UI and API logic lives in `src/features/favorites`, so recipe cards and recipe detail pages share the same behavior.

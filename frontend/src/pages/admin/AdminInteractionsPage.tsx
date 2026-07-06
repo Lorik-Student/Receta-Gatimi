@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
+import { readArrayPayload } from "../../lib/apiPayload";
 
 interface ReviewRecord {
   id: number;
@@ -17,15 +18,6 @@ type ReviewDraft = {
   vleresimi: number;
   komenti: string;
 };
-
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) return payload as T[];
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) return value as T[];
-  }
-  return [];
-}
 
 function formatDate(value?: string) {
   return value ? new Date(value).toLocaleDateString() : "-";
@@ -52,7 +44,7 @@ export function AdminInteractionsPage() {
     setLoading(true);
     try {
       const response = await apiFetch(trimmedRecipeId ? `/interactions/reviews/recipe/${parsedRecipeId}` : "/interactions/reviews/admin");
-      setReviews(readCollection<ReviewRecord>(response, ["reviews", "data"]));
+      setReviews(readArrayPayload<ReviewRecord>(response, ["reviews", "data"]));
       setDraftError("");
     } catch (error) {
       console.error("Failed to fetch reviews:", error);

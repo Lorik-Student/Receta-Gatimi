@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
+import { readArrayPayload } from "../../lib/apiPayload";
 
 interface RecipeReportRecord {
   id: number;
@@ -43,21 +44,12 @@ interface BugReportRecord {
 
 type ActiveTab = "recipes" | "users" | "bugs";
 
-function readCollection<T>(payload: unknown, keys: string[]): T[] {
-  if (Array.isArray(payload)) return payload as T[];
-  for (const key of keys) {
-    const value = (payload as Record<string, unknown> | null)?.[key];
-    if (Array.isArray(value)) return value as T[];
-  }
-  return [];
-}
-
 function formatDate(value?: string | null) {
   return value ? new Date(value).toLocaleString("sq-AL") : "-";
 }
 
 function resolveReportPayload<T>(response: unknown): T[] {
-  return readCollection<T>(response, ["reports", "data"]);
+  return readArrayPayload<T>(response, ["reports", "data"]);
 }
 
 export function AdminReportsPage() {
