@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiFetch } from '../api';
+import { hasAdminRole } from '../utils/auth';
 
 type NotificationRecord = {
   id: number;
@@ -139,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
     };
   }, [isAuthenticated]);
 
-  const visibleNavItems = userRoles.some((role) => role.toLowerCase().includes('admin'))
+  const visibleNavItems = hasAdminRole(userRoles)
     ? [...navItems, { label: 'Admin dashboard', to: '/admin' }]
     : navItems;
 

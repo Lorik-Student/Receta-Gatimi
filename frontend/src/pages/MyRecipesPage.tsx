@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLoaderData, Link, useSearchParams } from "react-router-dom";
+import { redirect, useLoaderData, Link, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -9,6 +9,10 @@ import { resolveImageSrc } from "../utils/image";
 const RECIPE_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80";
 
 export async function myRecipesLoader() {
+  if (!localStorage.getItem("accessToken")) {
+    throw redirect("/login");
+  }
+
   const result = await apiFetch("/recipes/me");
   if (!result.ok) {
     throw new Error((result as any).error?.message || "Dështoi ngarkimi i recetave të tua");

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { Link, redirect, useLoaderData } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -27,6 +27,10 @@ interface LoaderData {
 }
 
 export async function shoppingListLoader() {
+  if (!localStorage.getItem("accessToken")) {
+    throw redirect("/login");
+  }
+
   return apiFetch("/shopping-lists/current");
 }
 

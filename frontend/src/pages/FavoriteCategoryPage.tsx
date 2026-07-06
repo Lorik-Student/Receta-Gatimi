@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useLoaderData, useParams } from "react-router-dom";
+import { Link, redirect, useLoaderData, useParams } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Cards, RecipeCardData } from "../components/Cards";
 import { Header } from "../components/Header";
@@ -32,6 +32,10 @@ interface FavoritesPayload {
 const RECIPE_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80";
 
 export function favoriteCategoryLoader() {
+  if (!localStorage.getItem("accessToken")) {
+    throw redirect("/login");
+  }
+
   return apiFetch("/interactions/favorites");
 }
 

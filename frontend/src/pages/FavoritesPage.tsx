@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLoaderData, useNavigate } from "react-router-dom";
+import { Link, redirect, useLoaderData, useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
@@ -28,6 +28,10 @@ interface FavoritesPayload {
 }
 
 export function favoritesLoader() {
+  if (!localStorage.getItem("accessToken")) {
+    throw redirect("/login");
+  }
+
   return apiFetch("/users/me/profile");
 }
 

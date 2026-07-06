@@ -5,6 +5,10 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
 export async function createRecipeLoader() {
+    if (!localStorage.getItem("accessToken")) {
+        throw redirect("/login");
+    }
+
     const response = await apiFetch("/categories");
     if (!response.ok) throw new Error("Kategoritë nuk mund të ngarkoheshin");
 

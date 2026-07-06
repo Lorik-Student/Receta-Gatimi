@@ -1,5 +1,7 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet, redirect } from "react-router-dom";
 import { NavigationBar } from "./components/NavigationBar";
+import { apiFetch } from "./api";
+import { hasAdminRole } from "./utils/auth";
 import { LoginAction, LoginPage } from "./pages/LoginPage.jsx";
 import { SignupAction, SignupPage } from "./pages/SignupPage.jsx";
 import { ErrorPage } from "./pages/ErrorPage";
@@ -33,6 +35,20 @@ function RootLayout() {
             </main>
         </div>
     );
+}
+
+export async function adminLoader() {
+    const response = await apiFetch("/users/me/profile");
+
+    if (!response.ok) {
+        throw new Error((response as any).error?.message || "Dështoi verifikimi i aksesit për administrimin");
+    }
+
+    if (!hasAdminRole((response as any)?.user?.roles)) {
+        throw redirect("/");
+    }
+
+    return null;
 }
 
 export const router = createBrowserRouter([
@@ -128,6 +144,7 @@ export const router = createBrowserRouter([
     {
         path: "/admin",
         element: <AdminLayout />,
+        loader: adminLoader,
         children: [
             { index: true, element: <AdminDashboardOverview /> },
             { path: "users", element: <AdminUsersPage /> },

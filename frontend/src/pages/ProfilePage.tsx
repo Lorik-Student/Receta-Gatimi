@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../api";
-import { useLoaderData, Link, useParams } from "react-router-dom";
+import { redirect, useLoaderData, Link, useNavigate, useParams } from "react-router-dom";
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import ProfileSidebar from '../components/ProfileSidebar';
@@ -43,6 +43,12 @@ interface ProfileRecipe {
 }
 
 export async function profileLoader({ params }: any) {
+  const isOwnProfileRoute = !params?.id;
+  const accessToken = localStorage.getItem("accessToken");
+  if (isOwnProfileRoute && !accessToken) {
+    throw redirect("/login");
+  }
+
   const profileResult = await apiFetch(params?.id ? `/users/${params.id}/profile` : "/users/me/profile");
   if (!profileResult.response.ok) {
     throw new Error((profileResult as any).error?.message || "Dështoi ngarkimi i profilit");
@@ -66,6 +72,7 @@ export async function profileLoader({ params }: any) {
 export function ProfilePage() {
   const data = useLoaderData() as any;
   const user = data.user;
+  const navigate = useNavigate();
   const params = useParams();
   const isOwnProfile = !params.id;
   const publicFavorites = Array.isArray(data.publicFavorites) ? data.publicFavorites : [];
@@ -99,7 +106,7 @@ export function ProfilePage() {
   function handleLogout() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    window.location.href = "/login";
+    navigate("/login", { replace: true });
   }
 
   function handleReportBug() {
