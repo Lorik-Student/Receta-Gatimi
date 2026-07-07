@@ -1,13 +1,13 @@
 ﻿import React from "react";
-import { type ActionFunctionArgs, useActionData, Link, Form } from 'react-router-dom'
-import { apiFetch, ErrorPayload, SuccessPayload } from '../api';
+import { type ActionFunctionArgs, useActionData, Link, Form, redirect } from 'react-router-dom'
+import { apiFetch, ErrorPayload } from '../api';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
 function hasInvalidInputs(formData: FormData): ErrorPayload | null {
   const emriRe = /^[A-Za-z]{2,}$/;
   const emailRe = /^[\w.-]+@[\w.-]+\.\w+$/;
-  const passwordRe = /^.{9,}$/;
+  const passwordRe = /^.{8,}$/;
   const phoneRe = /^\+?\d{10,15}$/;
 
   if (!emriRe.test(formData.get("firstName") as string)) return { success: false, error: { code: "INVALID_FIRST_NAME", message: "Emri nuk është i saktë" } };
@@ -38,11 +38,7 @@ export async function SignupAction({ request }: ActionFunctionArgs): Promise<Res
 
   if (!result.ok) return result as ErrorPayload;
 
-  const successPayload = result as SuccessPayload;
-  localStorage.setItem("accessToken", successPayload.accessToken as string);
-  localStorage.setItem("refreshToken", successPayload.refreshToken as string);
-  window.location.href = "/";
-  return null;
+  return redirect("/login");
 }
 
 export function SignupPage() {

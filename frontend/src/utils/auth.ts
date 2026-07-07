@@ -3,5 +3,5 @@ export function hasAdminRole(roles: unknown): boolean {
     return false;
   }
 
-  return roles.some((role) => typeof role === "string" && role.toLowerCase().includes("admin"));
+  return roles.some((role) => typeof role === "string" && role.toLowerCase() === "admin");
 }

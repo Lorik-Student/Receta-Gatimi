@@ -75,11 +75,11 @@ export async function addRolesToUser(userId: number, roles: UserRole[], prevConn
 
     try {
         const [roleRows] = await conn.query<RowDataPacket[]>(
-            `SELECT id FROM ${ROLE_TABLE} WHERE normalized_name = ? `,
+            `SELECT id FROM ${ROLE_TABLE} WHERE normalized_name IN (?)`,
             [roles],
         );
 
-        if (!roleRows[0]) {
+        if (roleRows.length === 0) {
             return;
         }
 

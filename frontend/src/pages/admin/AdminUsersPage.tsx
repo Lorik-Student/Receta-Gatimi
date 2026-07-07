@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "../../api";
 import { readArrayPayload } from "../../lib/apiPayload";
 
-type UserRole = "guest" | "user" | "chef" | "admin";
+type UserRole = "user" | "chef" | "admin";
 
 interface UserRecord {
   id: number;
@@ -31,7 +31,7 @@ type UserDraft = {
   statusi: string;
 };
 
-const roleOptions: UserRole[] = ["guest", "user", "chef", "admin"];
+const roleOptions: UserRole[] = ["user", "chef", "admin"];
 
 function formatDate(value?: string | null) {
   return value ? new Date(value).toLocaleDateString() : "-";

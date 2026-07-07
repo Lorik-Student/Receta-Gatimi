@@ -206,11 +206,18 @@ export async function updateFavoriteCategory(req: Request, res: Response) {
 
     const normalizedDescription = typeof pershkrimi === "string" ? pershkrimi.trim() : undefined;
 
-    const updated = await InteractionService.updateFavoriteCategory(userId, categoryId, {
-        emertimi,
-        pershkrimi: normalizedDescription === undefined ? undefined : (normalizedDescription.length > 0 ? normalizedDescription : null),
-        is_public
-    });
+    const updatePayload: { emertimi?: string; pershkrimi?: string | null; is_public?: boolean } = {};
+    if (emertimi !== undefined) {
+        updatePayload.emertimi = emertimi;
+    }
+    if (normalizedDescription !== undefined) {
+        updatePayload.pershkrimi = normalizedDescription.length > 0 ? normalizedDescription : null;
+    }
+    if (is_public !== undefined) {
+        updatePayload.is_public = is_public;
+    }
+
+    const updated = await InteractionService.updateFavoriteCategory(userId, categoryId, updatePayload);
     if (!updated) {
         throw new NotFoundError("FAVORITE_CATEGORY_NOT_FOUND", "Favorite category not found.");
     }

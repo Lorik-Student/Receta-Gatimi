@@ -3,7 +3,7 @@ ALTER TABLE Recipes
     ADD COLUMN hidden_at TIMESTAMP NULL DEFAULT NULL,
     ADD COLUMN hidden_reason VARCHAR(255) NULL;
 
-CREATE TABLE RecipeReports (
+CREATE TABLE IF NOT EXISTS RecipeReports (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     recipe_id INT UNSIGNED NOT NULL,
     reporter_user_id INT UNSIGNED NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE RecipeReports (
     INDEX idx_recipe_reports_status_data (status, data DESC)
 );
 
-CREATE TABLE UserReports (
+CREATE TABLE IF NOT EXISTS UserReports (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     reported_user_id INT UNSIGNED NOT NULL,
     reporter_user_id INT UNSIGNED NOT NULL,

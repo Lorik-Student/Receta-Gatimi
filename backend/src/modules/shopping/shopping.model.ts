@@ -19,13 +19,13 @@ function splitAmount(value: string): { quantity: number | null; unit: string } {
     const trimmedValue = value.trim();
     const match = trimmedValue.match(/^([0-9]+(?:\.[0-9]+)?)\s*(.*)$/);
 
-    if (!match) {
+    if (!match || !match[1]) {
         return { quantity: null, unit: trimmedValue };
     }
 
     return {
         quantity: Number(match[1]),
-        unit: match[2].trim(),
+        unit: (match[2] ?? "").trim(),
     };
 }
 

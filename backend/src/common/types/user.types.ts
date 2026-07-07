@@ -1,7 +1,6 @@
 import type { Recipe } from "./recipe.types.js";
 
 export enum UserRole {
-    guest = "guest",
     user = "user",
     chef = "chef",
     admin = "admin"

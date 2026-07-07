@@ -1,4 +1,4 @@
-CREATE TABLE FavoriteCategories (
+CREATE TABLE IF NOT EXISTS FavoriteCategories (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
     emertimi VARCHAR(80) NOT NULL,
@@ -7,12 +7,12 @@ CREATE TABLE FavoriteCategories (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE FavoriteCategoryItems (
+CREATE TABLE IF NOT EXISTS FavoriteCategoryItems (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     category_id INT UNSIGNED NOT NULL,
     favorite_id INT UNSIGNED NOT NULL,
     data_krijimit TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES FavoriteCategories(id) ON DELETE CASCADE,
-    FOREIGN KEY (favorite_id) REFERENCES Favorites(id) ON DELETE CASCADE,
     UNIQUE KEY unique_category_favorite (category_id, favorite_id)
 );
+

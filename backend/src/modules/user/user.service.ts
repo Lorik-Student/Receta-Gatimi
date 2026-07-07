@@ -1,5 +1,6 @@
 import * as Model from "./user.model.js";
 import type { UserInsert, UserProfile, User, UserUpdate } from "../../common/types/user.types.js";
+import type { Recipe } from "../../common/types/recipe.types.js";
 import bcrypt from "bcrypt";
 import { ConflictError, NotFoundError } from "../../common/http-errors.js";
 import { UserRole } from "../../common/types/index.js";
@@ -93,7 +94,7 @@ export async function getUserProfile(id: number, includeHiddenRecipes = false): 
     const foundUser = await Model.findUserProfile(id);
     if (!foundUser) throw new NotFoundError("USER_NOT_FOUND", "User not found");
     const recipes = await RecipeModel.getRecipesByUserId(id, includeHiddenRecipes);
-    return { ...foundUser, recipes };
+    return { ...foundUser, recipes: recipes as Recipe[] };
 
 }
 

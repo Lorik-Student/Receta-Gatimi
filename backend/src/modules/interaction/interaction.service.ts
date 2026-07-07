@@ -149,7 +149,7 @@ function groupFavoriteRows(rows: Array<Record<string, unknown>>): FavoriteCatego
                 user_id: Number(row.user_id),
                 emertimi: String(row.category_name),
                 is_public: Boolean(row.is_public),
-                imazhi: typeof row.imazhi === "string" ? row.imazhi : undefined,
+                imazhi: typeof row.imazhi === "string" ? row.imazhi : null,
                 data_krijimit: new Date(String(row.data_krijimit)),
                 recipes: []
             });
