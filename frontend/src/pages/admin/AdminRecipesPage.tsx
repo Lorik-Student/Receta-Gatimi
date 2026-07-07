@@ -73,6 +73,21 @@ function emptyRecipeDraft(): RecipeDraft {
   };
 }
 
+function normalizeDifficulty(value?: string | null): Difficulty {
+  switch (value) {
+    case "Lehtë":
+    case "Lehte":
+      return "Lehte";
+    case "Vështirë":
+    case "Veshtire":
+      return "Veshtire";
+    case "Mesatare":
+      return "Mesatare";
+    default:
+      return "Lehte";
+  }
+}
+
 function toRecipeDraft(recipe: RecipeRecord): RecipeDraft {
   return {
     titulli: recipe.titulli ?? "",
@@ -80,7 +95,7 @@ function toRecipeDraft(recipe: RecipeRecord): RecipeDraft {
     koha_pergatitjes: recipe.koha_pergatitjes ?? 0,
     koha_gatimit: recipe.koha_gatimit ?? 0,
     porcione: recipe.porcione ?? 1,
-    veshtiresija: (recipe.veshtiresija as Difficulty) ?? "Lehte",
+    veshtiresija: normalizeDifficulty(recipe.veshtiresija),
     imazhi: recipe.imazhi ?? "",
     user_id: recipe.user_id ?? 0,
     category_id: recipe.category_id ?? 0,
@@ -257,7 +272,7 @@ export function AdminRecipesPage() {
       koha_pergatitjes: Number(draft.koha_pergatitjes) || 0,
       koha_gatimit: Number(draft.koha_gatimit) || 0,
       porcione: Number(draft.porcione) || 1,
-      veshtiresija: draft.veshtiresija,
+      veshtiresija: normalizeDifficulty(draft.veshtiresija),
       imazhi: draft.imazhi.trim() || undefined,
       user_id: Number(draft.user_id) || undefined,
       category_id: Number(draft.category_id) || undefined,
